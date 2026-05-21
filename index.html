@@ -1,0 +1,2058 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CuteSkin · Тест на Project Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..600,0..100;1,9..144,300..500,0..100&family=Manrope:wght@300..700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* paper backgrounds — без изменений */
+    --paper:        #F4EFE5;
+    --paper-soft:   #FBF7EE;
+    --paper-deeper: #ECE3CF;
+
+    /* rules — заметнее, насыщеннее */
+    --rule:         #B8A57E;
+    --rule-soft:    #D2C5A2;
+    --rule-faint:   #E4DCC4;
+
+    /* ink */
+    --ink:          #1A1815;
+    --ink-soft:     #3D382F;
+    --ink-faint:    #76705F;
+    --ink-mute:     #A9A28C;
+
+    /* burgundy / wine — primary акцент под paper */
+    --burgundy:        #7A3D44;
+    --burgundy-deep:   #5C2A30;
+    --burgundy-hover:  #6A3037;
+
+    /* rose secondary */
+    --rose:         #9C5C5F;
+    --rose-deep:    #5E2E32;
+    --rose-soft:    #C68A8D;
+    --rose-tint:    #EDD7D3;
+    --rose-wash:    #F4E5E2;
+
+    /* gold — более явный, тёплый, без китча */
+    --gold:         #A8823E;
+    --gold-soft:    #C9A05C;
+    --gold-deep:    #7E5F26;
+
+    /* sage — насыщеннее */
+    --sage:         #5F7350;
+    --sage-deep:    #3F5236;
+    --sage-tint:    #D2DBC3;
+
+    /* clay для ошибок */
+    --clay:         #A55244;
+    --clay-deep:    #6B2E22;
+    --clay-tint:    #ECCFC8;
+
+    --shadow-card:    0 2px 4px rgba(60, 42, 28, 0.05), 0 24px 60px -28px rgba(80, 50, 35, 0.22);
+    --shadow-deep:    0 2px 6px rgba(60, 42, 28, 0.07), 0 40px 100px -36px rgba(80, 50, 35, 0.30);
+    --shadow-btn:     0 2px 0 rgba(94, 42, 48, 0.18), 0 8px 22px -8px rgba(94, 42, 48, 0.35);
+    --shadow-btn-finish: 0 2px 0 rgba(63, 82, 54, 0.20), 0 8px 22px -8px rgba(63, 82, 54, 0.38);
+  }
+
+  html { background: var(--paper); }
+
+  body {
+    font-family: "Manrope", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.62;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 56px 20px 80px;
+    letter-spacing: 0.005em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--paper);
+    background-image:
+      radial-gradient(ellipse 70vw 60vh at 12% -8%, rgba(214, 184, 156, 0.34) 0%, transparent 65%),
+      radial-gradient(ellipse 60vw 65vh at 95% 108%, rgba(168, 122, 102, 0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 80vw 80vh at 60% 50%, rgba(231, 211, 187, 0.18) 0%, transparent 60%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.12 0 0 0 0 0.09 0 0 0 0 0.05 0 0 0 0.07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    background-attachment: fixed, fixed, fixed, fixed;
+    background-size: auto, auto, auto, 220px 220px;
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* === decorative motifs === */
+  .molecules { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .molecule {
+    position: absolute;
+    opacity: 0.13;
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease;
+    will-change: transform;
+    color: var(--burgundy-deep);
+  }
+  .molecule svg { display: block; width: 100%; height: 100%; }
+  @media (max-width: 720px) { .molecule { opacity: 0.07; } }
+  @media (prefers-reduced-motion: reduce) { .molecule { transition: none; } }
+
+  /* === header === */
+  header {
+    background: linear-gradient(180deg, var(--paper-soft) 0%, #F8F1E2 100%);
+    border: 1.5px solid var(--rule);
+    border-radius: 4px;
+    padding: 56px 56px 40px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 28px;
+    text-align: center;
+    position: relative;
+  }
+  header::before, header::after {
+    content: "";
+    position: absolute;
+    left: 22px;
+    right: 22px;
+    height: 1px;
+    background: var(--rule-soft);
+  }
+  header::before { top: 16px; }
+  header::after { bottom: 16px; }
+  header .progress,
+  header .nav-grid { text-align: initial; }
+
+  .logo {
+    display: block;
+    width: 94px;
+    height: auto;
+    margin: 0 auto 26px;
+    filter: contrast(1.06) drop-shadow(0 2px 4px rgba(120, 60, 50, 0.16));
+  }
+
+  h1 {
+    font-family: "Fraunces", "Cormorant Garamond", "Times New Roman", serif;
+    font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 0;
+    font-size: clamp(30px, 4.2vw, 42px);
+    font-weight: 380;
+    letter-spacing: -0.018em;
+    line-height: 1.08;
+    margin-bottom: 18px;
+    color: var(--ink);
+  }
+  h1 em, h1 i { font-style: italic; font-weight: 380; color: var(--burgundy); }
+
+  .subtitle {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--ink-soft);
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-top: 10px;
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    font-family: "Manrope", sans-serif;
+    line-height: 1.5;
+  }
+  .subtitle::before, .subtitle::after {
+    content: "";
+    display: inline-block;
+    width: 36px;
+    height: 1.5px;
+    background: var(--gold);
+    flex-shrink: 0;
+  }
+
+  /* === progress === */
+  .progress {
+    margin-top: 38px;
+    height: 3px;
+    background: var(--rule-faint);
+    border-radius: 999px;
+    overflow: visible;
+    position: relative;
+  }
+  .progress-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--burgundy), var(--rose));
+    width: 0%;
+    transition: width .7s cubic-bezier(0.65, 0, 0.35, 1);
+    position: relative;
+    border-radius: 999px;
+  }
+  .progress-bar::after {
+    content: "";
+    position: absolute;
+    right: -5px;
+    top: -3.5px;
+    width: 10px;
+    height: 10px;
+    background: var(--burgundy);
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--paper-soft), 0 2px 6px rgba(94, 42, 48, 0.35);
+  }
+
+  /* === nav-grid === */
+  .nav-grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 7px;
+    margin-top: 28px;
+  }
+  .nav-grid:empty { display: none; }
+  .nav-btn {
+    aspect-ratio: 1;
+    border: 1.5px solid var(--rule);
+    background: var(--paper);
+    border-radius: 3px;
+    font-family: "Fraunces", serif;
+    font-variation-settings: "opsz" 14, "SOFT" 60;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all .22s ease;
+    position: relative;
+  }
+  .nav-btn:hover {
+    border-color: var(--burgundy);
+    color: var(--burgundy);
+    background: var(--rose-wash);
+    transform: translateY(-1px);
+  }
+  .nav-btn.active {
+    background: var(--burgundy);
+    color: var(--paper-soft);
+    border-color: var(--burgundy);
+    box-shadow: 0 4px 10px -2px rgba(94, 42, 48, 0.40);
+  }
+  .nav-btn.answered:not(.active) {
+    background: var(--rose-tint);
+    border-color: var(--rose-soft);
+    color: var(--rose-deep);
+  }
+
+  /* === section title === */
+  .section-title {
+    font-family: "Manrope", sans-serif;
+    font-size: 10.5px;
+    color: var(--gold-deep);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.36em;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .section-title::before {
+    content: "";
+    flex: 0 0 28px;
+    height: 2px;
+    background: var(--gold);
+  }
+  .section-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--rule-soft);
+  }
+
+  /* === card === */
+  .card {
+    background: var(--paper-soft);
+    border: 1.5px solid var(--rule);
+    border-radius: 4px;
+    padding: 52px 56px 44px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 16px; left: 16px;
+    width: 10px; height: 10px;
+    border-top: 1.5px solid var(--burgundy);
+    border-left: 1.5px solid var(--burgundy);
+  }
+  .card::after {
+    content: "";
+    position: absolute;
+    bottom: 16px; right: 16px;
+    width: 10px; height: 10px;
+    border-bottom: 1.5px solid var(--burgundy);
+    border-right: 1.5px solid var(--burgundy);
+  }
+
+  .question {
+    font-family: "Fraunces", "Cormorant Garamond", serif;
+    font-variation-settings: "opsz" 100, "SOFT" 70, "WONK" 0;
+    font-size: 25px;
+    font-weight: 400;
+    margin-bottom: 30px;
+    color: var(--ink);
+    line-height: 1.36;
+    letter-spacing: -0.012em;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* === answers === */
+  .answers {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .answer {
+    padding: 20px 24px 20px 20px;
+    border: 1.5px solid var(--rule-soft);
+    border-radius: 3px;
+    background: var(--paper-soft);
+    cursor: pointer;
+    transition: border-color .22s ease, background .22s ease, color .22s ease, box-shadow .22s ease, transform .15s ease;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.52;
+    text-align: left;
+    font-family: "Manrope", sans-serif;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    position: relative;
+  }
+  .answer:not(:disabled):hover {
+    border-color: var(--burgundy);
+    background: var(--rose-wash);
+    color: var(--ink);
+    box-shadow: 0 8px 20px -10px rgba(94, 42, 48, 0.30);
+    transform: translateY(-1px);
+  }
+  .answer:not(:disabled):hover .marker {
+    border-color: var(--burgundy);
+    background: var(--burgundy);
+    color: var(--paper-soft);
+  }
+  .answer .marker {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid var(--rule);
+    background: var(--paper);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--burgundy);
+    font-family: "Fraunces", serif;
+    font-variation-settings: "opsz" 14, "SOFT" 50;
+    letter-spacing: 0;
+    transition: border-color .22s ease, color .22s ease, background .22s ease;
+    margin-top: 0;
+  }
+  .answer.picked {
+    background: var(--burgundy);
+    color: var(--paper-soft);
+    cursor: default;
+    border-color: var(--burgundy);
+    box-shadow: 0 10px 28px -12px rgba(94, 42, 48, 0.55);
+  }
+  .answer.picked .marker {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--paper-soft);
+  }
+  .answer.revealed { cursor: default; }
+  .answer:disabled { cursor: default; }
+  .answer:disabled:not(.picked) {
+    opacity: 0.5;
+    background: transparent;
+    color: var(--ink-faint);
+    border-color: var(--rule-faint);
+  }
+  .answer:disabled:not(.picked) .marker {
+    background: transparent;
+    border-color: var(--rule-faint);
+    color: var(--ink-mute);
+  }
+
+  /* === controls / buttons === */
+  .controls {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .btn {
+    padding: 15px 30px;
+    border: 1.5px solid var(--ink);
+    border-radius: 3px;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .22s ease;
+    font-family: "Manrope", sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+  .btn-primary {
+    background: var(--burgundy);
+    color: var(--paper-soft);
+    border-color: var(--burgundy);
+    box-shadow: var(--shadow-btn);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--burgundy-hover);
+    border-color: var(--burgundy-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 0 rgba(94, 42, 48, 0.22), 0 14px 28px -8px rgba(94, 42, 48, 0.45);
+  }
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 1px 0 rgba(94, 42, 48, 0.22), 0 4px 12px -4px rgba(94, 42, 48, 0.30);
+  }
+  .btn-primary:disabled {
+    background: var(--paper-deeper);
+    color: var(--ink-mute);
+    border-color: var(--rule-soft);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .btn-secondary {
+    background: var(--paper);
+    color: var(--ink);
+    border: 1.5px solid var(--ink);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--paper-deeper);
+    border-color: var(--burgundy);
+    color: var(--burgundy);
+  }
+  .btn-secondary:disabled {
+    color: var(--ink-mute);
+    border-color: var(--rule-soft);
+    cursor: not-allowed;
+    background: transparent;
+  }
+  .btn-finish {
+    background: var(--sage);
+    color: var(--paper-soft);
+    border: 1.5px solid var(--sage);
+    box-shadow: var(--shadow-btn-finish);
+  }
+  .btn-finish:hover {
+    background: var(--sage-deep);
+    border-color: var(--sage-deep);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 0 rgba(63, 82, 54, 0.24), 0 14px 28px -8px rgba(63, 82, 54, 0.45);
+  }
+
+  /* === result card === */
+  .result-card {
+    text-align: center;
+    padding: 68px 56px 56px;
+  }
+  .result-label {
+    color: var(--gold-deep);
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.36em;
+    margin-bottom: 22px;
+  }
+  .result-score {
+    font-family: "Fraunces", serif;
+    font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 0;
+    font-size: clamp(76px, 12vw, 112px);
+    font-weight: 360;
+    color: var(--ink);
+    margin: 0 0 8px;
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+  .result-breakdown {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    margin-top: 40px;
+    background: var(--paper);
+    border: 1.5px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .result-section {
+    background: var(--paper-soft);
+    padding: 24px 16px;
+    text-align: center;
+    box-shadow: none;
+    border-radius: 0;
+    border-right: 1px solid var(--rule-soft);
+  }
+  .result-section:last-child { border-right: none; }
+  .result-section-name {
+    font-size: 10px;
+    color: var(--gold-deep);
+    margin-bottom: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.24em;
+  }
+  .result-section-score {
+    font-family: "Fraunces", serif;
+    font-variation-settings: "opsz" 36, "SOFT" 60;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--ink);
+  }
+
+  .hidden { display: none !important; }
+
+  /* === multi hint === */
+  .multi-hint {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--burgundy);
+    background: var(--rose-wash);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 14px;
+    border: 1.5px solid var(--rose-soft);
+    border-radius: 999px;
+    margin: -16px 0 26px;
+    text-transform: uppercase;
+    letter-spacing: 0.24em;
+    box-shadow: none;
+  }
+  .multi-hint::before {
+    content: "";
+    display: inline-block;
+    width: 14px;
+    height: 1.5px;
+    background: var(--burgundy);
+  }
+
+  /* === free input === */
+  .free-answer {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .free-input {
+    width: 100%;
+    min-height: 170px;
+    padding: 22px 24px;
+    border: 1.5px solid var(--rule);
+    border-radius: 3px;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Manrope", sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    caret-color: var(--burgundy);
+    transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+    box-shadow: inset 0 1px 2px rgba(60, 42, 28, 0.04);
+  }
+  .free-input::placeholder {
+    color: var(--ink-mute);
+    font-style: italic;
+  }
+  .free-input:focus {
+    border-color: var(--burgundy);
+    background: var(--paper-soft);
+    box-shadow: 0 0 0 4px var(--rose-wash), inset 0 1px 2px rgba(60, 42, 28, 0.04);
+  }
+  .free-input:disabled {
+    opacity: 1;
+    cursor: default;
+    background: var(--paper-deeper);
+    color: var(--ink-soft);
+  }
+  .free-submit-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 16px;
+  }
+  .free-hint {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--ink-faint);
+    letter-spacing: 0.04em;
+    font-style: normal;
+  }
+  .free-submitted {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--sage-deep);
+    background: var(--sage-tint);
+    padding: 8px 16px;
+    border: 1.5px solid var(--sage);
+    box-shadow: none;
+    text-transform: uppercase;
+    letter-spacing: 0.24em;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 999px;
+  }
+  .free-submitted::before {
+    content: "";
+    display: inline-block;
+    width: 14px;
+    height: 1.5px;
+    background: var(--sage);
+  }
+
+  /* === free results list === */
+  .result-free-list {
+    margin-top: 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    text-align: left;
+    background: var(--paper);
+    border: 1.5px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .result-free-item {
+    background: var(--paper-soft);
+    padding: 24px 26px;
+    box-shadow: none;
+    border-radius: 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .result-free-item:last-child { border-bottom: none; }
+  .result-free-q {
+    font-family: "Fraunces", serif;
+    font-variation-settings: "opsz" 24, "SOFT" 60;
+    font-size: 17px;
+    font-weight: 420;
+    color: var(--ink);
+    margin-bottom: 10px;
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+  }
+  .result-free-a {
+    font-size: 14px;
+    color: var(--ink-soft);
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.6;
+    padding-top: 10px;
+    border-top: 1px solid var(--rule-soft);
+    margin-top: 4px;
+  }
+  .result-free-a.empty {
+    color: var(--ink-mute);
+    font-style: italic;
+  }
+
+  /* === welcome === */
+  .welcome-card {
+    text-align: center;
+    padding: 76px 56px 60px;
+  }
+  .welcome-title {
+    font-family: "Fraunces", serif;
+    font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 0;
+    font-size: clamp(22px, 3.2vw, 28px);
+    font-weight: 400;
+    color: var(--ink);
+    margin: 0 auto 16px;
+    max-width: 500px;
+    letter-spacing: -0.012em;
+    line-height: 1.3;
+  }
+  .welcome-sub {
+    color: var(--ink-soft);
+    margin: 0 auto 42px;
+    font-size: 13.5px;
+    font-weight: 500;
+    max-width: 460px;
+    line-height: 1.65;
+    letter-spacing: 0.01em;
+  }
+  .welcome-field {
+    text-align: left;
+    margin-bottom: 28px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .welcome-label {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--gold-deep);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+  }
+  .welcome-input {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 16px;
+    font-family: "Manrope", sans-serif;
+    font-weight: 500;
+    border: 1.5px solid var(--rule);
+    border-radius: 3px;
+    background: var(--paper);
+    outline: none;
+    color: var(--ink);
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    letter-spacing: 0.005em;
+    box-shadow: inset 0 1px 2px rgba(60, 42, 28, 0.04);
+  }
+  .welcome-input::placeholder {
+    color: var(--ink-mute);
+    font-style: italic;
+  }
+  .welcome-input:focus {
+    border-color: var(--burgundy);
+    background: var(--paper-soft);
+    box-shadow: 0 0 0 4px var(--rose-wash), inset 0 1px 2px rgba(60, 42, 28, 0.04);
+  }
+  .welcome-input.error {
+    border-color: var(--clay);
+    animation: shake 0.35s ease;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+  .welcome-btn {
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    margin: 18px auto 0;
+    padding: 17px;
+    font-size: 12px;
+  }
+
+  /* === warning === */
+  .warning-card {
+    padding: 0;
+    text-align: left;
+    overflow: hidden;
+    border-color: var(--burgundy);
+  }
+  .warning-card::before,
+  .warning-card::after { display: none; }
+
+  .warning-head {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 32px 48px;
+    background: var(--ink);
+    color: var(--paper-soft);
+    border-radius: 0;
+    margin-bottom: 0;
+    font-family: "Fraunces", serif;
+    font-variation-settings: "opsz" 36, "SOFT" 70;
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    border-bottom: 3px solid var(--burgundy);
+  }
+  .warning-head-icon {
+    font-size: 24px;
+    line-height: 1;
+    color: var(--gold-soft);
+    font-family: "Fraunces", serif;
+    font-style: italic;
+  }
+  .warning-lead {
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.65;
+    font-weight: 500;
+    margin: 0;
+    padding: 34px 48px 10px;
+    font-family: "Manrope", sans-serif;
+  }
+  .warning-sub {
+    color: var(--gold-deep);
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    margin: 0;
+    padding: 12px 48px;
+  }
+  .warning-list {
+    margin: 0 48px 28px;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .warning-list li {
+    position: relative;
+    padding: 16px 0 16px 30px;
+    border-radius: 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--rule-soft);
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+  .warning-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 24px;
+    width: 16px;
+    height: 1.5px;
+    background: var(--burgundy);
+    transform: none;
+    font-size: 0;
+    line-height: 0;
+  }
+  .warning-list b { color: var(--burgundy); font-weight: 700; }
+  .warning-note {
+    text-align: left;
+    color: var(--ink-faint);
+    font-size: 12px;
+    font-weight: 500;
+    margin: 0;
+    padding: 18px 48px;
+    font-style: italic;
+  }
+  .warning-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 26px 48px 36px;
+    border-top: 1px solid var(--rule-soft);
+    background: var(--paper);
+  }
+  .warning-actions .btn { flex: 1 1 200px; }
+  .warning-back {
+    background: var(--paper);
+    color: var(--ink);
+    border: 1.5px solid var(--rule);
+    font-weight: 700;
+  }
+  .warning-back:hover {
+    border-color: var(--burgundy);
+    color: var(--burgundy);
+    background: var(--paper-soft);
+  }
+
+  .warning-preview-label {
+    margin: 0;
+    text-align: center;
+    color: var(--gold-deep);
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.36em;
+    padding: 18px 0 12px;
+  }
+  .warning-preview {
+    margin: 0 48px 28px;
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    border: 1.5px solid var(--rule);
+  }
+  .wp-hero {
+    background: linear-gradient(180deg, #2A201D, #1A1815);
+    color: var(--paper-soft);
+    padding: 26px 28px 28px;
+    position: relative;
+  }
+  .wp-eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.36em;
+    text-transform: uppercase;
+    color: var(--gold-soft);
+    margin-bottom: 14px;
+  }
+  .wp-title {
+    font-family: "Fraunces", serif;
+    font-variation-settings: "opsz" 48, "SOFT" 70;
+    font-size: 26px;
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.012em;
+    margin-bottom: 10px;
+  }
+  .wp-date {
+    font-size: 12px;
+    color: rgba(245, 235, 215, 0.62);
+    margin-bottom: 18px;
+    letter-spacing: 0.04em;
+  }
+  .wp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .wp-chip {
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 3px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    box-shadow: none;
+    border: 1.5px solid var(--rule);
+  }
+  .wp-chip-warn { color: var(--clay-deep); border: 1.5px solid var(--clay); }
+  .wp-alert {
+    background: var(--burgundy-deep);
+    color: var(--paper-soft);
+    padding: 14px 28px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+  }
+
+  /* === send-status === */
+  .send-status {
+    margin: 32px 0 4px;
+    padding: 14px 20px;
+    border-radius: 3px;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-align: center;
+    transition: all 0.3s ease;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    border: 1.5px solid;
+  }
+  .send-status.sending {
+    background: var(--paper);
+    color: var(--ink-soft);
+    border-color: var(--rule);
+  }
+  .send-status.success {
+    background: var(--sage-tint);
+    color: var(--sage-deep);
+    border-color: var(--sage);
+  }
+  .send-status.error {
+    background: var(--clay-tint);
+    color: var(--clay-deep);
+    border-color: var(--clay);
+  }
+  .send-status.skipped {
+    background: var(--paper);
+    color: var(--ink-faint);
+    border-color: var(--rule);
+  }
+  .send-retry {
+    display: inline-block;
+    margin-left: 12px;
+    padding: 6px 14px;
+    background: transparent;
+    border: 1.5px solid var(--clay);
+    color: var(--clay-deep);
+    border-radius: 3px;
+    font-size: 10.5px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-family: "Manrope", sans-serif;
+  }
+  .send-retry:hover { background: var(--clay); color: var(--paper-soft); }
+
+  /* === responsive === */
+  @media (max-width: 720px) {
+    body { padding: 28px 14px 60px; font-size: 15px; }
+    .nav-grid { grid-template-columns: repeat(6, 1fr); gap: 6px; }
+    .result-breakdown { grid-template-columns: repeat(2, 1fr); }
+    .result-section:nth-child(2n) { border-right: none; }
+    .result-section:nth-child(-n+4) { border-bottom: 1px solid var(--rule-soft); }
+    .card { padding: 36px 22px 30px; }
+    header { padding: 38px 22px 30px; }
+    .welcome-card { padding: 56px 22px 42px; }
+    .result-card { padding: 52px 22px 36px; }
+    .warning-head { padding: 22px 24px; font-size: 18px; gap: 12px; }
+    .warning-lead, .warning-sub, .warning-note { padding-left: 24px; padding-right: 24px; }
+    .warning-list, .warning-preview { margin-left: 24px; margin-right: 24px; }
+    .warning-actions { padding: 22px 24px 30px; }
+    h1 { font-size: 26px; }
+    .question { font-size: 19.5px; }
+    .answer { padding: 16px 18px; font-size: 14px; gap: 14px; }
+    .answer .marker { width: 28px; height: 28px; font-size: 13px; }
+    .btn { padding: 13px 22px; font-size: 11px; }
+    .subtitle::before, .subtitle::after { width: 22px; }
+    .card::before, .card::after { width: 8px; height: 8px; }
+    .logo { width: 80px; }
+  }
+
+  /* === logo watermarks === */
+  .logo-watermark {
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    filter: saturate(0.42) hue-rotate(-12deg) brightness(0.96) contrast(1.04);
+    user-select: none;
+    -webkit-user-drag: none;
+    height: auto;
+  }
+  .logo-wm-1 { top: -18vh; left: -18vw;  width: clamp(620px, 80vw, 960px); opacity: 0.22; }
+  .logo-wm-2 { top:  36vh; right: -24vw; width: clamp(560px, 72vw, 840px); opacity: 0.18; }
+  .logo-wm-3 { bottom:-22vh; left: 22vw; width: clamp(420px, 56vw, 640px); opacity: 0.13; }
+  @media (max-width: 720px) {
+    .logo-wm-1 { opacity: 0.12; left: -28vw; width: clamp(420px, 110vw, 620px); }
+    .logo-wm-2 { opacity: 0.10; right: -36vw; width: clamp(380px, 100vw, 560px); }
+    .logo-wm-3 { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="molecules" aria-hidden="true">
+  <img class="molecule logo-watermark logo-wm-1" src="logo.png?v=2" alt="" style="transform: rotate(-10deg);">
+  <img class="molecule logo-watermark logo-wm-2" src="logo.png?v=2" alt="" style="transform: rotate(14deg);">
+  <img class="molecule logo-watermark logo-wm-3" src="logo.png?v=2" alt="" style="transform: rotate(-4deg);">
+</div>
+<div class="container">
+  <header>
+    <img src="logo.png?v=2" alt="CuteSkin" class="logo">
+    <h1>Тест на Project Manager</h1>
+    <div class="subtitle">5 разделов · 18 вопросов. После ответа выбор нельзя изменить.</div>
+    <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="nav-grid" id="navGrid"></div>
+  </header>
+
+  <div id="quizArea"></div>
+  <div id="resultArea" class="hidden"></div>
+</div>
+
+<script>
+const EMAIL_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxL0N5lOGZtgGPq_BWhCP4_SkI5VHRu6QQlBqgXrSRfAYzA69VE4B9QGq6q27Vfnl_kbg/exec";
+const EMAIL_SECRET = "cuteskin_8nF3xQ2pVwR7mYzK9dHaB5sLqE6tGvJ4";
+const PENDING_KEY = "cuteskin_pending_payload";
+
+async function computeSig(secret, message) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sigBuf = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+  return Array.from(new Uint8Array(sigBuf))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function signPayload(p) {
+  p.ts = Math.floor(Date.now() / 1000);
+  try {
+    p.sig = await computeSig(EMAIL_SECRET, (p.name || '') + '|' + (p.score || '') + '|' + p.ts);
+  } catch (e) { console.warn('sig compute failed', e); }
+  return p;
+}
+
+const QUIZ = [
+  {
+    section: "Раздел 1. Термины",
+    q: "Вопрос 1. Что такое маржинальная прибыль на единицу товара?",
+    answers: [
+      { t: "Разница между выручкой от продажи товара и всеми переменными расходами, которые напрямую связаны с его закупкой, логистикой и продвижением.", correct: true },
+      { t: "Сумма, которая остается у продавца после вычета всех без исключения расходов: переменных (закупка, комиссия, логистика, реклама) и постоянных (аренда склада/офиса, зарплата сотрудников, налоги, проценты по кредитам).", correct: false },
+      { t: "Общая сумма, полученная от покупателя за проданный товар.", correct: false },
+      { t: "Показатель эффективности, который показывает, сколько процентов прибыли содержится в каждом рубле выручки.", correct: false }
+    ]
+  },
+  {
+    section: "Раздел 1. Термины",
+    q: "Вопрос 2. Что такое границы трафика?",
+    answers: [
+      { t: "Максимальная доля показов, которую может получить карточка товара в выдаче – определяется как 80% от всех показов по запросу, выше которых трафика нет.", correct: false },
+      { t: "Позиция в поисковой выдаче ниже которой находится не более 20% всего поискового трафика по конкретному запросу. Иными словами, это нижняя граница «зоны основного трафика», куда попадает подавляющая часть переходов.", correct: true },
+      { t: "Разница между органической и платной выдачей: все позиции ниже границы считаются «хвостом», где рекламный аукцион не работает.", correct: false },
+      { t: "Максимальная частотность ключевого запроса за определенный период, выше которой увеличить кол-во показов невозможно вне зависимости от места показа и ставки.", correct: false }
+    ]
+  },
+  {
+    section: "Раздел 1. Термины",
+    q: "Вопрос 3. Что такое СРО? Как оно считается?",
+    answers: [
+      { t: "Средняя выручка на один заказ = Сумма выручки от рекламы / количество заказов", correct: false },
+      { t: "Средняя стоимость одного клика = Сумма затрат на рекламу / количество кликов", correct: false },
+      { t: "Стоимость одного заказа = Сумма затрат на рекламу / количество заказов по этой рекламе", correct: true },
+      { t: "Стоимость одного заказа = Сумма затрат на логистику, хранение и упаковку / количество заказов", correct: false }
+    ]
+  },
+  {
+    section: "Раздел 2. Факторы влияния",
+    q: "Вопрос 4. Что влияет на CTR в поисковой выдаче?",
+    multi: true,
+    answers: [
+      { t: "Качество отзывов. Если среди последний отзывов много негативных - это снижает CTR карточки товара.", correct: false },
+      { t: "Позиция в поисковой выдаче. CTR в первой десятке будет отличаться от CTR, например, на 40 месте в выдаче.", correct: true },
+      { t: "Первые 3 фото в контентной воронке карточки товара", correct: true },
+      { t: "Корректно заполненные характеристики товара реально соответствующие данному товару", correct: false },
+      { t: "Стоимость товара относительно конкурентов стоящих рядом в поисковой выдаче", correct: true }
+    ]
+  },
+  {
+    section: "Раздел 2. Факторы влияния",
+    q: "Вопрос 5. Что из этого может резко снизить место в выдаче, если ничего больше не менялось?",
+    multi: true,
+    answers: [
+      { t: "Цена товара увеличилась, но он остался в акции", correct: true },
+      { t: "Рейтинг изменился в 4,9 на 4,7", correct: true },
+      { t: "У товара изменилась контентная воронка", correct: false },
+      { t: "Товар вылетел с крупного московского склада", correct: true },
+      { t: "Товар добавили в склейку с другими товарами кабинета", correct: false }
+    ]
+  },
+  {
+    section: "Раздел 2. Факторы влияния",
+    q: "Вопрос 6. Что влияет на увеличение объема трафика в рекомендательных полках?",
+    multi: true,
+    answers: [
+      { t: "Увеличение кол-ва заказов товара", correct: true },
+      { t: "Уменьшение СРО по товару", correct: false },
+      { t: "Конверсии и кол-во заказов по поисковым запросам", correct: true },
+      { t: "Увеличение стоимости товара", correct: false },
+      { t: "Увеличение ставки в РК с рекомендательными полками", correct: true }
+    ]
+  },
+  {
+    section: "Раздел 3. Ситуации",
+    q: "Вопрос 7. У товара от предыдущего дня упало количества заказов, конверсии при этом не изменились - в чем причина падения заказов?",
+    answers: [
+      { t: "Конкуренты опустили цену на аналогичный товар", correct: false },
+      { t: "На товар пришло несколько негативных отзывов, которые оказались не закрыты положительными отзывами", correct: false },
+      { t: "Уменьшилось количество показов карточки", correct: true },
+      { t: "У товара закончились остатки на московских складах", correct: false }
+    ]
+  },
+  {
+    section: "Раздел 3. Ситуации",
+    q: "Вопрос 8. Мы опустили цену на товар, в рекламных настройках ничего не менялось, но маржа на единицу не упала, а наоборот выросла. Почему?",
+    answers: [
+      { t: "У товара увеличилось количество заказов и маржи стало больше", correct: false },
+      { t: "В рекламе уменьшилось количество показов", correct: false },
+      { t: "Это невозможно, если ставки не менялись, а цена снизилась - то маржа тоже снизилась", correct: false },
+      { t: "Увеличились конверсии, из-за этого СРО снизился", correct: true }
+    ]
+  },
+  {
+    section: "Раздел 3. Ситуации",
+    q: "Вопрос 9. У товара снизилась конверсия в корзину с 20% до 14% по общей воронке продаж. В рекламе при этом не было никаких изменений (ни по трафику, ни по конверсиям, ни по СТР). В чем может быть причина?",
+    answers: [
+      { t: "Конкуренты снизили цену и люди стали уходить к конкурентам", correct: false },
+      { t: "Товар добавили в склейку с другими товарами кабинета", correct: true },
+      { t: "На товар прилетело несколько подряд негативных отзывов и они не закрыты положительными отзывами", correct: false },
+      { t: "Изменилась контентная воронка товара", correct: false }
+    ]
+  },
+  {
+    section: "Раздел 4. Математические",
+    q: "Вопрос 10. Цена товара 1000 рублей. ДРР - 12%. Мы снизили цену товара до 800 рублей, СРО стал 50 рублей. Каким округленно стал ДРР?",
+    answers: [
+      { t: "ДРР не изменился и остался 12%", correct: false },
+      { t: "ДРР вырос до 15%", correct: false },
+      { t: "ДРР стал 40%", correct: false },
+      { t: "ДРР стал 6%", correct: true }
+    ]
+  },
+  {
+    section: "Раздел 4. Математические",
+    q: "Вопрос 11. Оба товара продаются с ценой 1000 рублей. Прибыль без рекламных затрат 300 рублей. У обоих товаров 5000 тыс. переходов в карточку в неделю. У товара 1: конверсия в корзину 12%, конверсия в заказ 20%, ДРР 5%. У товара 2: конверсия в корзину 20%, конверсия в заказ 20%, ДРР 15%. На каком товаре общая прибыль за неделю будет больше?",
+    answers: [
+      { t: "Заработаем больше на 1м товаре", correct: false },
+      { t: "Заработаем больше на 2м товаре", correct: false },
+      { t: "Заработок будет одинаковый", correct: true },
+      { t: "Оба товара продаются в минус", correct: false }
+    ]
+  },
+  {
+    section: "Раздел 4. Математические",
+    q: "Вопрос 12. CR карточки вырос с 10% до 20%, но выручка упала на 20%. Если больше ничего не менялось - какой ответ будет верным?",
+    answers: [
+      { t: "Цена уменьшилась на 15%, кол-во трафика не изменилось", correct: false },
+      { t: "CTR карточки снизился с 5% до 2%, кол-во трафика не изменилось", correct: true },
+      { t: "Количество трафика уменьшилось в 2 раза", correct: false },
+      { t: "Количество трафика не менялось, но кол-во заказов уменьшилось на 20%", correct: false }
+    ]
+  },
+  {
+    section: "Раздел 5.1. Знание отчётов ВБ",
+    q: "Вопрос 13. У товара доля локализации 40%. Вам необходимо понять куда отгрузить товар, чтобы увеличить долю локализации. В каком отчёте ВБ вы будете это анализировать?",
+    free: true
+  },
+  {
+    section: "Раздел 5.1. Знание отчётов ВБ",
+    q: "Вопрос 14. В Единой кампании, которая работает в основном на рекомендательные полки, низкий CTR. В каком отчёте вы будете анализировать, какие конкретно рекомендательные полки дают низкий CTR?",
+    free: true
+  },
+  {
+    section: "Раздел 5.1. Знание отчётов ВБ",
+    q: "Вопрос 15. У конкурента вчера резко выросло количество заказов. Цена при этом не менялась. В каком отчёте вы будете смотреть, откуда у конкурента столько заказов и какие показатели конкурента будете оценивать в первую очередь?",
+    free: true
+  },
+  {
+    section: "Раздел 5.2. Знание отчётов ОЗОН",
+    q: "Вопрос 16. У товара очень широкое SEO в описании и названии. Вы хотите убрать нерелевантные ключевые запросы. В каком отчёте вы будете смотреть, какие запросы вам стоит убрать?",
+    free: true
+  },
+  {
+    section: "Раздел 5.2. Знание отчётов ОЗОН",
+    q: "Вопрос 17. У вас несколько товаров в склейке. В рекламе 2 артикула из склейки. Вы хотите понять, с рекламы какого из этих двух артикулов больше заказов уходит на остальные товары в склейке. В каком отчёте вы будете это смотреть?",
+    free: true
+  },
+  {
+    section: "Раздел 5.2. Знание отчётов ОЗОН",
+    q: "Вопрос 18. У вас низкая доля локальных продаж. Вам необходимо её улучшить. На какой отчёт вы будете опираться, чтобы понять куда отгрузить товар?",
+    free: true
+  }
+];
+
+const LETTERS = ["А", "Б", "В", "Г", "Д"];
+let currentIdx = 0;
+let candidateName = "";
+let started = false;
+let acknowledged = false;
+let finished = false;
+let lastPayload = null;
+let testStartAt = null;
+let testEndAt = null;
+let screenshotAttempts = 0;
+let lastRenderedIdx = -1;
+let activeQuestionIdx = null;
+let questionEnterAt = null;
+const state = QUIZ.map(() => ({
+  picked: null, finalized: false, text: "", submitted: false,
+  timeSpent: 0, pasteAttempts: 0, copyAttempts: 0
+}));
+
+function flushActiveTimer() {
+  if (activeQuestionIdx != null && questionEnterAt != null && state[activeQuestionIdx]) {
+    state[activeQuestionIdx].timeSpent += Date.now() - questionEnterAt;
+  }
+  activeQuestionIdx = null;
+  questionEnterAt = null;
+}
+function startQuestionTimer(i) {
+  flushActiveTimer();
+  activeQuestionIdx = i;
+  questionEnterAt = Date.now();
+}
+
+let lastAwayAt = 0;
+let awayStartAt = 0;
+function registerAway() {
+  if (!started || finished) return;
+  const now = Date.now();
+  if (now - lastAwayAt < 500) return;
+  lastAwayAt = now;
+  awayStartAt = now;
+  flushActiveTimer();
+}
+function registerBack() {
+  if (!started || finished) return;
+  if (awayStartAt > 0) {
+    const awayDuration = Date.now() - awayStartAt;
+    const recentShot = (Date.now() - lastShotAt) < 3000;
+    if (awayDuration > 50 && awayDuration < 2500 && !recentShot) {
+      screenshotAttempts++;
+      lastShotAt = Date.now();
+    }
+    awayStartAt = 0;
+  }
+  if (activeQuestionIdx == null && currentIdx >= 0 && currentIdx < QUIZ.length) {
+    startQuestionTimer(currentIdx);
+  }
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") registerAway();
+  else if (document.visibilityState === "visible") registerBack();
+});
+window.addEventListener("blur", registerAway);
+window.addEventListener("focus", registerBack);
+
+document.addEventListener("copy", () => {
+  if (!started || finished) return;
+  if (activeQuestionIdx != null && state[activeQuestionIdx]) {
+    state[activeQuestionIdx].copyAttempts++;
+  }
+});
+
+let lastShotAt = 0;
+function registerScreenshot() {
+  if (!started || finished) return;
+  const now = Date.now();
+  if (now - lastShotAt < 500) return;
+  lastShotAt = now;
+  screenshotAttempts++;
+}
+function isScreenshotCombo(e) {
+  const key = e.key || "";
+  const code = e.code || "";
+  const kLow = key.toLowerCase();
+  if (key === "PrintScreen" || kLow === "printscreen") return true;
+  if (code === "PrintScreen") return true;
+  if (e.keyCode === 44) return true;
+  if (e.metaKey && e.shiftKey && (kLow === "3" || kLow === "4" || kLow === "5" || kLow === "6")) return true;
+  if (e.metaKey && e.shiftKey && kLow === "s") return true;
+  if (e.ctrlKey && (key === "PrintScreen" || code === "PrintScreen")) return true;
+  if (e.altKey && (key === "PrintScreen" || code === "PrintScreen")) return true;
+  return false;
+}
+function onShotKey(e) {
+  if (isScreenshotCombo(e)) registerScreenshot();
+}
+document.addEventListener("keydown", onShotKey, true);
+document.addEventListener("keyup", onShotKey, true);
+window.addEventListener("keydown", onShotKey, true);
+window.addEventListener("keyup", onShotKey, true);
+
+const quizArea = document.getElementById("quizArea");
+const resultArea = document.getElementById("resultArea");
+const navGrid = document.getElementById("navGrid");
+const progressBar = document.getElementById("progressBar");
+
+function isAnswered(i) {
+  const q = QUIZ[i];
+  const s = state[i];
+  return q.free ? s.submitted : s.finalized;
+}
+
+function scrollToTop() {
+  try {
+    if (document.activeElement && document.activeElement.blur && document.activeElement !== document.body) {
+      document.activeElement.blur();
+    }
+  } catch (_) {}
+  try {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  } catch (_) {
+    window.scrollTo(0, 0);
+  }
+  if (document.documentElement) document.documentElement.scrollTop = 0;
+  if (document.body) document.body.scrollTop = 0;
+}
+
+function buildNav() {
+  navGrid.innerHTML = "";
+  if (!started) {
+    progressBar.style.width = "0%";
+    return;
+  }
+  QUIZ.forEach((_, i) => {
+    const btn = document.createElement("button");
+    btn.className = "nav-btn";
+    btn.textContent = i + 1;
+    if (i === currentIdx) btn.classList.add("active");
+    if (isAnswered(i)) btn.classList.add("answered");
+    btn.onclick = () => { currentIdx = i; render(); };
+    navGrid.appendChild(btn);
+  });
+  const answered = QUIZ.filter((_, i) => isAnswered(i)).length;
+  progressBar.style.width = (answered / QUIZ.length * 100) + "%";
+}
+
+function renderWelcome() {
+  flushActiveTimer();
+  buildNav();
+  quizArea.innerHTML = "";
+  resultArea.classList.add("hidden");
+  quizArea.classList.remove("hidden");
+  lastRenderedIdx = -1;
+  scrollToTop();
+
+  const card = document.createElement("div");
+  card.className = "card welcome-card";
+
+  const title = document.createElement("div");
+  title.className = "welcome-title";
+  title.textContent = "Перед началом теста представьтесь - напишите имя и ник в телеграм или номер телефона";
+  card.appendChild(title);
+
+  const sub = document.createElement("div");
+  sub.className = "welcome-sub";
+  sub.textContent = "Результаты будут автоматически отправлены работодателю по e-mail";
+  card.appendChild(sub);
+
+  const field = document.createElement("div");
+  field.className = "welcome-field";
+  const label = document.createElement("label");
+  label.className = "welcome-label";
+  label.textContent = "Имя и фамилия";
+  field.appendChild(label);
+
+  const input = document.createElement("input");
+  input.className = "welcome-input";
+  input.type = "text";
+  input.placeholder = "Например, Анна Иванова";
+  input.value = candidateName;
+  input.autocomplete = "name";
+  input.oninput = () => {
+    candidateName = input.value;
+    input.classList.remove("error");
+  };
+  field.appendChild(input);
+  card.appendChild(field);
+
+  const btn = document.createElement("button");
+  btn.className = "btn btn-primary welcome-btn";
+  btn.textContent = "Продолжить →";
+  btn.onclick = () => {
+    candidateName = input.value.trim();
+    if (!candidateName) {
+      input.classList.add("error");
+      input.focus();
+      return;
+    }
+    renderWarning();
+  };
+  input.onkeydown = (e) => { if (e.key === "Enter") btn.click(); };
+  card.appendChild(btn);
+
+  quizArea.appendChild(card);
+  setTimeout(() => {
+    scrollToTop();
+    try { input.focus({ preventScroll: true }); } catch (_) {}
+  }, 50);
+}
+
+function renderWarning() {
+  flushActiveTimer();
+  buildNav();
+  quizArea.innerHTML = "";
+  resultArea.classList.add("hidden");
+  quizArea.classList.remove("hidden");
+  lastRenderedIdx = -1;
+  scrollToTop();
+
+  const card = document.createElement("div");
+  card.className = "card warning-card";
+
+  const head = document.createElement("div");
+  head.className = "warning-head";
+  const icon = document.createElement("span");
+  icon.className = "warning-head-icon";
+  icon.textContent = "⚠";
+  const headText = document.createElement("span");
+  headText.textContent = "Внимание — прочтите перед началом!";
+  head.appendChild(icon);
+  head.appendChild(headText);
+  card.appendChild(head);
+
+  const lead = document.createElement("div");
+  lead.className = "warning-lead";
+  lead.textContent = "В тесте стоит защита от любых способов задействовать поисковые системы и нейросети для прохождения теста. Не пытайтесь обмануть систему — работодатель увидит, если вы пользуетесь дополнительными источниками для прохождения теста. Для нас важно понимать ваши реальные знания.";
+  card.appendChild(lead);
+
+  const actions = document.createElement("div");
+  actions.className = "warning-actions";
+
+  const back = document.createElement("button");
+  back.className = "btn warning-back";
+  back.type = "button";
+  back.textContent = "← Назад";
+  back.onclick = () => renderWelcome();
+  actions.appendChild(back);
+
+  const go = document.createElement("button");
+  go.className = "btn btn-primary";
+  go.type = "button";
+  go.textContent = "Я готов(а), приступаю →";
+  go.onclick = () => {
+    acknowledged = true;
+    started = true;
+    currentIdx = 0;
+    render();
+  };
+  actions.appendChild(go);
+
+  card.appendChild(actions);
+  quizArea.appendChild(card);
+  scrollToTop();
+  requestAnimationFrame(() => {
+    scrollToTop();
+    requestAnimationFrame(() => scrollToTop());
+  });
+}
+
+function render() {
+  if (!started) {
+    renderWelcome();
+    return;
+  }
+  if (testStartAt == null) testStartAt = Date.now();
+  if (!finished) startQuestionTimer(currentIdx);
+  buildNav();
+  const q = QUIZ[currentIdx];
+  const s = state[currentIdx];
+
+  quizArea.innerHTML = "";
+  if (currentIdx !== lastRenderedIdx) scrollToTop();
+  lastRenderedIdx = currentIdx;
+  const card = document.createElement("div");
+  card.className = "card";
+
+  const sectionEl = document.createElement("div");
+  sectionEl.className = "section-title";
+  sectionEl.textContent = q.section;
+  card.appendChild(sectionEl);
+
+  const qEl = document.createElement("div");
+  qEl.className = "question";
+  qEl.textContent = q.q;
+  card.appendChild(qEl);
+
+  if (q.multi) {
+    const hint = document.createElement("div");
+    hint.className = "multi-hint";
+    hint.textContent = "Можно выбрать несколько вариантов ответа";
+    card.appendChild(hint);
+  }
+
+  if (q.free) {
+    const wrap = document.createElement("div");
+    wrap.className = "free-answer";
+
+    const input = document.createElement("textarea");
+    input.className = "free-input";
+    input.placeholder = "Ваш ответ...";
+    input.value = s.text || "";
+    input.onpaste = e => { s.pasteAttempts++; e.preventDefault(); };
+    input.ondrop = e => { s.pasteAttempts++; e.preventDefault(); };
+    if (s.submitted) {
+      input.disabled = true;
+      input.readOnly = true;
+    }
+    wrap.appendChild(input);
+
+    const row = document.createElement("div");
+    row.className = "free-submit-row";
+
+    if (s.submitted) {
+      const tag = document.createElement("div");
+      tag.className = "free-submitted";
+      tag.textContent = "✓ Ответ отправлен";
+      row.appendChild(tag);
+    } else {
+      const MIN_LEN = 10;
+      const hint = document.createElement("div");
+      hint.className = "free-hint";
+      const submit = document.createElement("button");
+      submit.className = "btn btn-primary";
+      submit.textContent = "Отправить";
+      const updateState = () => {
+        const n = input.value.trim().length;
+        submit.disabled = n < MIN_LEN;
+        hint.textContent = n < MIN_LEN ? ("Минимум " + MIN_LEN + " символов · сейчас " + n) : "";
+      };
+      input.oninput = () => { s.text = input.value; updateState(); };
+      submit.onclick = () => {
+        if (input.value.trim().length < MIN_LEN) return;
+        s.text = input.value;
+        s.submitted = true;
+        render();
+      };
+      updateState();
+      row.appendChild(hint);
+      row.appendChild(submit);
+    }
+
+    wrap.appendChild(row);
+    card.appendChild(wrap);
+  } else {
+    const answersEl = document.createElement("div");
+    answersEl.className = "answers";
+
+    q.answers.forEach((a, i) => {
+      const btn = document.createElement("button");
+      btn.className = "answer";
+      btn.type = "button";
+
+      const marker = document.createElement("span");
+      marker.className = "marker";
+      marker.textContent = LETTERS[i];
+      btn.appendChild(marker);
+
+      const text = document.createElement("span");
+      text.textContent = a.t;
+      btn.appendChild(text);
+
+      const pickedThis = s.picked && s.picked.includes(i);
+
+      if (q.multi) {
+        if (pickedThis) {
+          btn.classList.add("revealed", "picked");
+          btn.disabled = true;
+        } else {
+          btn.onclick = () => pick(i);
+        }
+      } else {
+        if (s.finalized) {
+          btn.classList.add("revealed");
+          btn.disabled = true;
+          if (pickedThis) btn.classList.add("picked");
+        } else {
+          btn.onclick = () => pick(i);
+        }
+      }
+
+      answersEl.appendChild(btn);
+    });
+    card.appendChild(answersEl);
+  }
+
+  const controls = document.createElement("div");
+  controls.className = "controls";
+
+  const prevBtn = document.createElement("button");
+  prevBtn.className = "btn btn-secondary";
+  prevBtn.textContent = "← Назад";
+  prevBtn.disabled = currentIdx === 0;
+  prevBtn.onclick = () => { if (currentIdx > 0) { currentIdx--; render(); } };
+  controls.appendChild(prevBtn);
+
+  if (currentIdx === QUIZ.length - 1) {
+    const finishBtn = document.createElement("button");
+    finishBtn.className = "btn btn-finish";
+    finishBtn.textContent = "Завершить тест";
+    finishBtn.onclick = showResults;
+    controls.appendChild(finishBtn);
+  } else {
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "btn btn-primary";
+    nextBtn.textContent = "Дальше →";
+    nextBtn.onclick = () => { currentIdx++; render(); };
+    controls.appendChild(nextBtn);
+  }
+
+  card.appendChild(controls);
+  quizArea.appendChild(card);
+}
+
+function pick(i) {
+  const q = QUIZ[currentIdx];
+  const s = state[currentIdx];
+
+  if (q.multi) {
+    if (!s.picked) s.picked = [];
+    if (s.picked.includes(i)) return;
+    s.picked.push(i);
+    s.finalized = true;
+  } else {
+    if (s.finalized) return;
+    s.picked = [i];
+    s.finalized = true;
+  }
+  render();
+}
+
+function isCorrect(qi) {
+  const q = QUIZ[qi];
+  const s = state[qi];
+  if (q.free) return false;
+  if (!s.finalized || !s.picked) return false;
+  if (q.multi) {
+    const correctIdx = q.answers.map((a, i) => a.correct ? i : -1).filter(i => i >= 0);
+    return s.picked.length === correctIdx.length && s.picked.every(i => correctIdx.includes(i));
+  }
+  return q.answers[s.picked[0]].correct === true;
+}
+
+function showResults() {
+  flushActiveTimer();
+  finished = true;
+  testEndAt = Date.now();
+  const gradedIdx = QUIZ.map((q, i) => q.free ? -1 : i).filter(i => i >= 0);
+  const total = gradedIdx.length;
+  const correct = gradedIdx.reduce((sum, i) => sum + (isCorrect(i) ? 1 : 0), 0);
+
+  const sections = {};
+  QUIZ.forEach((q, i) => {
+    if (!sections[q.section]) sections[q.section] = { total: 0, correct: 0, free: !!q.free };
+    sections[q.section].total++;
+    if (!q.free && isCorrect(i)) sections[q.section].correct++;
+  });
+
+  quizArea.classList.add("hidden");
+  resultArea.classList.remove("hidden");
+  resultArea.innerHTML = "";
+  scrollToTop();
+
+  const card = document.createElement("div");
+  card.className = "card result-card";
+
+  const label = document.createElement("div");
+  label.className = "result-label";
+  label.textContent = "Ваш результат";
+  card.appendChild(label);
+
+  const score = document.createElement("div");
+  score.className = "result-score";
+  score.textContent = correct + " / " + total;
+  card.appendChild(score);
+
+  const pct = Math.round(correct / total * 100);
+  const sub = document.createElement("div");
+  sub.className = "result-label";
+  sub.textContent = pct + "% правильных ответов";
+  card.appendChild(sub);
+
+  const breakdown = document.createElement("div");
+  breakdown.className = "result-breakdown";
+  Object.entries(sections).forEach(([name, data]) => {
+    const sec = document.createElement("div");
+    sec.className = "result-section";
+    const nm = document.createElement("div");
+    nm.className = "result-section-name";
+    nm.textContent = name.replace(/^Раздел [\d.]+\. /, "");
+    const sc = document.createElement("div");
+    sc.className = "result-section-score";
+    sc.textContent = data.free ? "—" : (data.correct + " / " + data.total);
+    sec.appendChild(nm);
+    sec.appendChild(sc);
+    breakdown.appendChild(sec);
+  });
+  card.appendChild(breakdown);
+
+  const freeQs = QUIZ.map((q, i) => ({ q, i })).filter(x => x.q.free);
+  if (freeQs.length) {
+    const list = document.createElement("div");
+    list.className = "result-free-list";
+    freeQs.forEach(({ q, i }) => {
+      const item = document.createElement("div");
+      item.className = "result-free-item";
+      const qLine = document.createElement("div");
+      qLine.className = "result-free-q";
+      qLine.textContent = q.q;
+      const aLine = document.createElement("div");
+      aLine.className = "result-free-a";
+      const text = (state[i].text || "").trim();
+      if (text) aLine.textContent = text;
+      else { aLine.classList.add("empty"); aLine.textContent = "Ответ не был отправлен"; }
+      item.appendChild(qLine);
+      item.appendChild(aLine);
+      list.appendChild(item);
+    });
+    card.appendChild(list);
+  }
+
+  const controls = document.createElement("div");
+  controls.className = "controls";
+  controls.style.justifyContent = "center";
+
+  const reviewBtn = document.createElement("button");
+  reviewBtn.className = "btn btn-secondary";
+  reviewBtn.textContent = "Пересмотреть ответы";
+  reviewBtn.onclick = () => {
+    resultArea.classList.add("hidden");
+    quizArea.classList.remove("hidden");
+    currentIdx = 0;
+    render();
+  };
+  controls.appendChild(reviewBtn);
+
+  const restartBtn = document.createElement("button");
+  restartBtn.className = "btn btn-primary";
+  restartBtn.textContent = "Пройти заново";
+  restartBtn.onclick = () => {
+    state.forEach(s => {
+      s.picked = null; s.finalized = false; s.text = ""; s.submitted = false;
+      s.timeSpent = 0; s.pasteAttempts = 0; s.copyAttempts = 0;
+    });
+    candidateName = "";
+    started = false;
+    acknowledged = false;
+    finished = false;
+    lastPayload = null;
+    testStartAt = null;
+    testEndAt = null;
+    screenshotAttempts = 0;
+    lastRenderedIdx = -1;
+    activeQuestionIdx = null;
+    questionEnterAt = null;
+    lastAwayAt = 0;
+    awayStartAt = 0;
+    lastShotAt = 0;
+    resultArea.classList.add("hidden");
+    quizArea.classList.remove("hidden");
+    currentIdx = 0;
+    render();
+  };
+  controls.appendChild(restartBtn);
+
+  const sendStatus = document.createElement("div");
+  sendStatus.className = "send-status sending";
+  sendStatus.textContent = "Отправка результатов на e-mail…";
+  card.appendChild(sendStatus);
+
+  lastPayload = buildPayload(correct, total, pct, sections);
+  deliverResults(sendStatus);
+
+  card.appendChild(controls);
+  resultArea.appendChild(card);
+  buildNav();
+}
+
+function answerText(q, idx) {
+  return q.answers && q.answers[idx] ? q.answers[idx].t : "";
+}
+
+function correctAnswersText(q) {
+  if (!q.answers) return "";
+  const ci = q.answers.map((a, i) => a.correct ? i : -1).filter(i => i >= 0);
+  return ci.map(i => LETTERS[i] + ". " + q.answers[i].t).join(" | ");
+}
+
+function pickedAnswersText(q, s) {
+  if (!s.picked || !s.picked.length) return "";
+  return s.picked.map(i => LETTERS[i] + ". " + answerText(q, i)).join(" | ");
+}
+
+function buildPayload(correct, total, pct, sections) {
+  const durationSec = testStartAt && testEndAt ? Math.round((testEndAt - testStartAt) / 1000) : 0;
+  return {
+    name: candidateName,
+    date: new Date().toISOString(),
+    score: correct + "/" + total,
+    correct: correct,
+    total: total,
+    percent: pct,
+    duration_sec: durationSec,
+    screenshot_attempts: screenshotAttempts,
+    sections: Object.entries(sections).map(([name, d]) => ({
+      name,
+      correct: d.correct,
+      total: d.total,
+      free: !!d.free
+    })),
+    answers: QUIZ.map((q, i) => {
+      const s = state[i];
+      const base = {
+        num: i + 1,
+        section: q.section,
+        q: q.q,
+        time_sec: Math.round((s.timeSpent || 0) / 1000),
+        paste_attempts: s.pasteAttempts || 0,
+        copy_attempts: s.copyAttempts || 0
+      };
+      if (q.free) {
+        return Object.assign(base, {
+          type: "free",
+          free_text: (s.text || "").trim(),
+          submitted: !!s.submitted
+        });
+      }
+      return Object.assign(base, {
+        type: q.multi ? "multi" : "single",
+        picked_text: pickedAnswersText(q, s),
+        correct_text: correctAnswersText(q),
+        is_correct: isCorrect(i),
+        answered: !!s.finalized
+      });
+    })
+  };
+}
+
+async function deliverResults(statusEl) {
+  if (!EMAIL_WEBHOOK_URL) {
+    statusEl.className = "send-status skipped";
+    statusEl.textContent = "⚙ Отправка на e-mail ещё не настроена";
+    return;
+  }
+
+  // Свежий ts+sig + сохраняем в localStorage до отправки (crash-safe).
+  await signPayload(lastPayload);
+  try { localStorage.setItem(PENDING_KEY, JSON.stringify(lastPayload)); } catch (e) {}
+
+  statusEl.className = "send-status sending";
+  statusEl.textContent = "Отправка результатов на e-mail…";
+
+  const showError = (msg, detail) => {
+    if (detail) console.error("[deliverResults]", detail);
+    statusEl.className = "send-status error";
+    statusEl.textContent = "⚠ " + msg + " ";
+    const retry = document.createElement("button");
+    retry.className = "send-retry";
+    retry.type = "button";
+    retry.textContent = "Повторить";
+    retry.onclick = () => deliverResults(statusEl);
+    statusEl.appendChild(retry);
+  };
+
+  const sendOnce = (attempt) => {
+    const ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(() => ctrl.abort(), 25000) : null;
+    return fetch(EMAIL_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(lastPayload),
+      redirect: "follow",
+      mode: "cors",
+      signal: ctrl ? ctrl.signal : undefined
+    }).then((r) => {
+      if (timer) clearTimeout(timer);
+      return r.text().then((t) => ({ ok: r.ok, status: r.status, text: t }));
+    }).catch((err) => {
+      if (timer) clearTimeout(timer);
+      if (attempt < 1) {
+        return new Promise((res) => setTimeout(res, 1200)).then(() => sendOnce(attempt + 1));
+      }
+      throw err;
+    });
+  };
+
+  sendOnce(0)
+    .then(({ ok, status, text }) => {
+      let parsed = null;
+      try { parsed = JSON.parse(text); } catch (e) {}
+      if (ok && parsed && parsed.ok) {
+        try { localStorage.removeItem(PENDING_KEY); } catch (e) {}
+        statusEl.className = "send-status success";
+        statusEl.textContent = parsed.dedup
+          ? "✓ Результаты уже были отправлены"
+          : "✓ Результаты отправлены работодателю";
+      } else {
+        showError("Сервер вернул ошибку (" + status + ")", { status, text: (text || "").slice(0, 200) });
+      }
+    })
+    .catch((err) => {
+      const name = (err && err.name) || "";
+      const msg = (err && err.message) || "";
+      let label = "Не удалось отправить результаты";
+      if (name === "AbortError") label = "Сервер долго не отвечал";
+      else if (/fetch|network/i.test(msg)) label = "Нет связи с сервером";
+      showError(label, { name, message: msg });
+    });
+}
+
+async function resendPending() {
+  let raw = null;
+  try { raw = localStorage.getItem(PENDING_KEY); } catch (e) {}
+  if (!raw) return;
+  let data;
+  try { data = JSON.parse(raw); } catch (e) {
+    try { localStorage.removeItem(PENDING_KEY); } catch (_) {}
+    return;
+  }
+  if (!data || !data.name) {
+    try { localStorage.removeItem(PENDING_KEY); } catch (_) {}
+    return;
+  }
+  try {
+    await signPayload(data);
+    const ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(() => ctrl.abort(), 20000) : null;
+    const resp = await fetch(EMAIL_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(data),
+      redirect: "follow",
+      mode: "cors",
+      signal: ctrl ? ctrl.signal : undefined
+    });
+    if (timer) clearTimeout(timer);
+    if (!resp.ok) return;
+    const text = await resp.text();
+    let parsed = null; try { parsed = JSON.parse(text); } catch (e) {}
+    if (parsed && parsed.ok) {
+      try { localStorage.removeItem(PENDING_KEY); } catch (_) {}
+    }
+  } catch (e) { /* попробуем на следующей загрузке */ }
+}
+
+if ("scrollRestoration" in history) {
+  try { history.scrollRestoration = "manual"; } catch (_) {}
+}
+render();
+setTimeout(resendPending, 1500);
+
+(function () {
+  const mols = Array.from(document.querySelectorAll(".molecule"));
+  if (!mols.length) return;
+  const bases = mols.map((el) => ({
+    el,
+    baseTransform: el.style.transform || "",
+    cx: 0,
+    cy: 0,
+  }));
+  let mouseX = -99999, mouseY = -99999;
+  let ticking = false;
+  const RANGE = 220;
+  const STRENGTH = 48;
+
+  function measure() {
+    for (const b of bases) {
+      b.el.style.setProperty("--tx", "0px");
+      b.el.style.setProperty("--ty", "0px");
+      b.el.style.transform = b.baseTransform;
+      const r = b.el.getBoundingClientRect();
+      b.cx = r.left + r.width / 2;
+      b.cy = r.top + r.height / 2;
+    }
+  }
+
+  function update() {
+    ticking = false;
+    for (const b of bases) {
+      const dx = b.cx - mouseX;
+      const dy = b.cy - mouseY;
+      const dist = Math.hypot(dx, dy);
+      let tx = 0, ty = 0;
+      if (dist < RANGE && dist > 0.5) {
+        const f = (1 - dist / RANGE) * STRENGTH;
+        tx = (dx / dist) * f;
+        ty = (dy / dist) * f;
+      }
+      b.el.style.transform = `${b.baseTransform} translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px)`;
+    }
+  }
+
+  function onMove(e) {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+  }
+
+  window.addEventListener("mousemove", onMove, { passive: true });
+  window.addEventListener("resize", () => { measure(); update(); });
+  window.addEventListener("scroll", () => { measure(); }, { passive: true });
+  if (document.readyState === "complete") measure();
+  else window.addEventListener("load", measure);
+})();
+</script>
+</body>
+</html>
