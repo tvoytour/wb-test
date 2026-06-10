@@ -1060,6 +1060,9 @@
 <script>
 const EMAIL_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxL0N5lOGZtgGPq_BWhCP4_SkI5VHRu6QQlBqgXrSRfAYzA69VE4B9QGq6q27Vfnl_kbg/exec";
 const EMAIL_SECRET = "";
+// Необязательный токен запроса (лёгкая защита webhook). Если задашь REQUEST_TOKEN в
+// Script Properties Apps Script — впиши то же значение сюда. Пусто = проверка выключена.
+const REQUEST_TOKEN = "";
 const PENDING_KEY = "cuteskin_pending_payload";
 
 async function computeSig(secret, message) {
@@ -1084,30 +1087,30 @@ const QUIZ = [
     section: "Раздел 1. Термины",
     q: "Вопрос 1. Что такое маржинальная прибыль на единицу товара?",
     answers: [
-      { t: "Разница между выручкой от продажи товара и всеми переменными расходами, которые напрямую связаны с его закупкой, логистикой и продвижением.", correct: true },
-      { t: "Сумма, которая остается у продавца после вычета всех без исключения расходов: переменных (закупка, комиссия, логистика, реклама) и постоянных (аренда склада/офиса, зарплата сотрудников, налоги, проценты по кредитам).", correct: false },
-      { t: "Общая сумма, полученная от покупателя за проданный товар.", correct: false },
-      { t: "Показатель эффективности, который показывает, сколько процентов прибыли содержится в каждом рубле выручки.", correct: false }
+      { t: "Разница между выручкой от продажи товара и всеми переменными расходами, которые напрямую связаны с его закупкой, логистикой и продвижением." },
+      { t: "Сумма, которая остается у продавца после вычета всех без исключения расходов: переменных (закупка, комиссия, логистика, реклама) и постоянных (аренда склада/офиса, зарплата сотрудников, налоги, проценты по кредитам)." },
+      { t: "Общая сумма, полученная от покупателя за проданный товар." },
+      { t: "Показатель эффективности, который показывает, сколько процентов прибыли содержится в каждом рубле выручки." }
     ]
   },
   {
     section: "Раздел 1. Термины",
     q: "Вопрос 2. Что такое границы трафика?",
     answers: [
-      { t: "Максимальная доля показов, которую может получить карточка товара в выдаче – определяется как 80% от всех показов по запросу, выше которых трафика нет.", correct: false },
-      { t: "Позиция в поисковой выдаче ниже которой находится не более 20% всего поискового трафика по конкретному запросу. Иными словами, это нижняя граница «зоны основного трафика», куда попадает подавляющая часть переходов.", correct: true },
-      { t: "Разница между органической и платной выдачей: все позиции ниже границы считаются «хвостом», где рекламный аукцион не работает.", correct: false },
-      { t: "Максимальная частотность ключевого запроса за определенный период, выше которой увеличить кол-во показов невозможно вне зависимости от места показа и ставки.", correct: false }
+      { t: "Максимальная доля показов, которую может получить карточка товара в выдаче – определяется как 80% от всех показов по запросу, выше которых трафика нет." },
+      { t: "Позиция в поисковой выдаче ниже которой находится не более 20% всего поискового трафика по конкретному запросу. Иными словами, это нижняя граница «зоны основного трафика», куда попадает подавляющая часть переходов." },
+      { t: "Разница между органической и платной выдачей: все позиции ниже границы считаются «хвостом», где рекламный аукцион не работает." },
+      { t: "Максимальная частотность ключевого запроса за определенный период, выше которой увеличить кол-во показов невозможно вне зависимости от места показа и ставки." }
     ]
   },
   {
     section: "Раздел 1. Термины",
     q: "Вопрос 3. Что такое СРО? Как оно считается?",
     answers: [
-      { t: "Средняя выручка на один заказ = Сумма выручки от рекламы / количество заказов", correct: false },
-      { t: "Средняя стоимость одного клика = Сумма затрат на рекламу / количество кликов", correct: false },
-      { t: "Стоимость одного заказа = Сумма затрат на рекламу / количество заказов по этой рекламе", correct: true },
-      { t: "Стоимость одного заказа = Сумма затрат на логистику, хранение и упаковку / количество заказов", correct: false }
+      { t: "Средняя выручка на один заказ = Сумма выручки от рекламы / количество заказов" },
+      { t: "Средняя стоимость одного клика = Сумма затрат на рекламу / количество кликов" },
+      { t: "Стоимость одного заказа = Сумма затрат на рекламу / количество заказов по этой рекламе" },
+      { t: "Стоимость одного заказа = Сумма затрат на логистику, хранение и упаковку / количество заказов" }
     ]
   },
   {
@@ -1115,11 +1118,11 @@ const QUIZ = [
     q: "Вопрос 4. Что влияет на CTR в поисковой выдаче?",
     multi: true,
     answers: [
-      { t: "Качество отзывов. Если среди последний отзывов много негативных - это снижает CTR карточки товара.", correct: false },
-      { t: "Позиция в поисковой выдаче. CTR в первой десятке будет отличаться от CTR, например, на 40 месте в выдаче.", correct: true },
-      { t: "Первые 3 фото в контентной воронке карточки товара", correct: true },
-      { t: "Корректно заполненные характеристики товара реально соответствующие данному товару", correct: false },
-      { t: "Стоимость товара относительно конкурентов стоящих рядом в поисковой выдаче", correct: true }
+      { t: "Качество отзывов. Если среди последний отзывов много негативных - это снижает CTR карточки товара." },
+      { t: "Позиция в поисковой выдаче. CTR в первой десятке будет отличаться от CTR, например, на 40 месте в выдаче." },
+      { t: "Первые 3 фото в контентной воронке карточки товара" },
+      { t: "Корректно заполненные характеристики товара реально соответствующие данному товару" },
+      { t: "Стоимость товара относительно конкурентов стоящих рядом в поисковой выдаче" }
     ]
   },
   {
@@ -1127,11 +1130,11 @@ const QUIZ = [
     q: "Вопрос 5. Что из этого может резко снизить место в выдаче, если ничего больше не менялось?",
     multi: true,
     answers: [
-      { t: "Цена товара увеличилась, но он остался в акции", correct: true },
-      { t: "Рейтинг изменился в 4,9 на 4,7", correct: true },
-      { t: "У товара изменилась контентная воронка", correct: false },
-      { t: "Товар вылетел с крупного московского склада", correct: true },
-      { t: "Товар добавили в склейку с другими товарами кабинета", correct: false }
+      { t: "Цена товара увеличилась, но он остался в акции" },
+      { t: "Рейтинг изменился в 4,9 на 4,7" },
+      { t: "У товара изменилась контентная воронка" },
+      { t: "Товар вылетел с крупного московского склада" },
+      { t: "Товар добавили в склейку с другими товарами кабинета" }
     ]
   },
   {
@@ -1139,71 +1142,71 @@ const QUIZ = [
     q: "Вопрос 6. Что влияет на увеличение объема трафика в рекомендательных полках?",
     multi: true,
     answers: [
-      { t: "Увеличение кол-ва заказов товара", correct: true },
-      { t: "Уменьшение СРО по товару", correct: false },
-      { t: "Конверсии и кол-во заказов по поисковым запросам", correct: true },
-      { t: "Увеличение стоимости товара", correct: false },
-      { t: "Увеличение ставки в РК с рекомендательными полками", correct: true }
+      { t: "Увеличение кол-ва заказов товара" },
+      { t: "Уменьшение СРО по товару" },
+      { t: "Конверсии и кол-во заказов по поисковым запросам" },
+      { t: "Увеличение стоимости товара" },
+      { t: "Увеличение ставки в РК с рекомендательными полками" }
     ]
   },
   {
     section: "Раздел 3. Ситуации",
     q: "Вопрос 7. У товара от предыдущего дня упало количества заказов, конверсии при этом не изменились - в чем причина падения заказов?",
     answers: [
-      { t: "Конкуренты опустили цену на аналогичный товар", correct: false },
-      { t: "На товар пришло несколько негативных отзывов, которые оказались не закрыты положительными отзывами", correct: false },
-      { t: "Уменьшилось количество показов карточки", correct: true },
-      { t: "У товара закончились остатки на московских складах", correct: false }
+      { t: "Конкуренты опустили цену на аналогичный товар" },
+      { t: "На товар пришло несколько негативных отзывов, которые оказались не закрыты положительными отзывами" },
+      { t: "Уменьшилось количество показов карточки" },
+      { t: "У товара закончились остатки на московских складах" }
     ]
   },
   {
     section: "Раздел 3. Ситуации",
     q: "Вопрос 8. Мы опустили цену на товар, в рекламных настройках ничего не менялось, но маржа на единицу не упала, а наоборот выросла. Почему?",
     answers: [
-      { t: "У товара увеличилось количество заказов и маржи стало больше", correct: false },
-      { t: "В рекламе уменьшилось количество показов", correct: false },
-      { t: "Это невозможно, если ставки не менялись, а цена снизилась - то маржа тоже снизилась", correct: false },
-      { t: "Увеличились конверсии, из-за этого СРО снизился", correct: true }
+      { t: "У товара увеличилось количество заказов и маржи стало больше" },
+      { t: "В рекламе уменьшилось количество показов" },
+      { t: "Это невозможно, если ставки не менялись, а цена снизилась - то маржа тоже снизилась" },
+      { t: "Увеличились конверсии, из-за этого СРО снизился" }
     ]
   },
   {
     section: "Раздел 3. Ситуации",
     q: "Вопрос 9. У товара снизилась конверсия в корзину с 20% до 14% по общей воронке продаж. В рекламе при этом не было никаких изменений (ни по трафику, ни по конверсиям, ни по СТР). В чем может быть причина?",
     answers: [
-      { t: "Конкуренты снизили цену и люди стали уходить к конкурентам", correct: false },
-      { t: "Товар добавили в склейку с другими товарами кабинета", correct: true },
-      { t: "На товар прилетело несколько подряд негативных отзывов и они не закрыты положительными отзывами", correct: false },
-      { t: "Изменилась контентная воронка товара", correct: false }
+      { t: "Конкуренты снизили цену и люди стали уходить к конкурентам" },
+      { t: "Товар добавили в склейку с другими товарами кабинета" },
+      { t: "На товар прилетело несколько подряд негативных отзывов и они не закрыты положительными отзывами" },
+      { t: "Изменилась контентная воронка товара" }
     ]
   },
   {
     section: "Раздел 4. Математические",
     q: "Вопрос 10. Цена товара 1000 рублей. ДРР - 12%. Мы снизили цену товара до 800 рублей, СРО стал 50 рублей. Каким округленно стал ДРР?",
     answers: [
-      { t: "ДРР не изменился и остался 12%", correct: false },
-      { t: "ДРР вырос до 15%", correct: false },
-      { t: "ДРР стал 40%", correct: false },
-      { t: "ДРР стал 6%", correct: true }
+      { t: "ДРР не изменился и остался 12%" },
+      { t: "ДРР вырос до 15%" },
+      { t: "ДРР стал 40%" },
+      { t: "ДРР стал 6%" }
     ]
   },
   {
     section: "Раздел 4. Математические",
     q: "Вопрос 11. Оба товара продаются с ценой 1000 рублей. Прибыль без рекламных затрат 300 рублей. У обоих товаров 5000 тыс. переходов в карточку в неделю. У товара 1: конверсия в корзину 12%, конверсия в заказ 20%, ДРР 5%. У товара 2: конверсия в корзину 20%, конверсия в заказ 20%, ДРР 15%. На каком товаре общая прибыль за неделю будет больше?",
     answers: [
-      { t: "Заработаем больше на 1м товаре", correct: false },
-      { t: "Заработаем больше на 2м товаре", correct: false },
-      { t: "Заработок будет одинаковый", correct: true },
-      { t: "Оба товара продаются в минус", correct: false }
+      { t: "Заработаем больше на 1м товаре" },
+      { t: "Заработаем больше на 2м товаре" },
+      { t: "Заработок будет одинаковый" },
+      { t: "Оба товара продаются в минус" }
     ]
   },
   {
     section: "Раздел 4. Математические",
     q: "Вопрос 12. CR карточки вырос с 10% до 20%, но выручка упала на 20%. Если больше ничего не менялось - какой ответ будет верным?",
     answers: [
-      { t: "Цена уменьшилась на 15%, кол-во трафика не изменилось", correct: false },
-      { t: "CTR карточки снизился с 5% до 2%, кол-во трафика не изменилось", correct: true },
-      { t: "Количество трафика уменьшилось в 2 раза", correct: false },
-      { t: "Количество трафика не менялось, но кол-во заказов уменьшилось на 20%", correct: false }
+      { t: "Цена уменьшилась на 15%, кол-во трафика не изменилось" },
+      { t: "CTR карточки снизился с 5% до 2%, кол-во трафика не изменилось" },
+      { t: "Количество трафика уменьшилось в 2 раза" },
+      { t: "Количество трафика не менялось, но кол-во заказов уменьшилось на 20%" }
     ]
   },
   {
@@ -1248,6 +1251,12 @@ let lastPayload = null;
 let testStartAt = null;
 let testEndAt = null;
 let screenshotAttempts = 0;
+let tabSwitches = 0;          // сколько раз уходил из окна/переключал вкладку
+let awayMsTotal = 0;          // суммарное время вне теста (мс)
+let copyAttempts = 0;         // попытки копирования (всего)
+let pasteAttempts = 0;        // попытки вставки (всего)
+let cutAttempts = 0;          // попытки вырезать (всего)
+let contextMenuAttempts = 0;  // попытки правого клика
 let lastRenderedIdx = -1;
 let activeQuestionIdx = null;
 let questionEnterAt = null;
@@ -1283,9 +1292,13 @@ function registerBack() {
   if (!started || finished) return;
   if (awayStartAt > 0) {
     const awayDuration = Date.now() - awayStartAt;
+    if (awayDuration > 150) {            // любой заметный уход = переключение/уход из окна
+      tabSwitches++;
+      awayMsTotal += awayDuration;
+    }
     const recentShot = (Date.now() - lastShotAt) < 3000;
     if (awayDuration > 50 && awayDuration < 2500 && !recentShot) {
-      screenshotAttempts++;
+      screenshotAttempts++;              // короткий уход фокуса — похоже на скриншот «Ножницами»
       lastShotAt = Date.now();
     }
     awayStartAt = 0;
@@ -1302,11 +1315,30 @@ document.addEventListener("visibilitychange", () => {
 window.addEventListener("blur", registerAway);
 window.addEventListener("focus", registerBack);
 
-document.addEventListener("copy", () => {
+// Антифрод: копирование/вырезание/вставка/перетаскивание/правый клик —
+// считаем и БЛОКИРУЕМ во время теста (чтобы нельзя было утащить вопрос или вставить ответ).
+function bumpPerQ(field) {
+  if (activeQuestionIdx != null && state[activeQuestionIdx]) state[activeQuestionIdx][field]++;
+}
+document.addEventListener("copy", (e) => {
   if (!started || finished) return;
-  if (activeQuestionIdx != null && state[activeQuestionIdx]) {
-    state[activeQuestionIdx].copyAttempts++;
-  }
+  copyAttempts++; bumpPerQ("copyAttempts"); e.preventDefault();
+});
+document.addEventListener("cut", (e) => {
+  if (!started || finished) return;
+  cutAttempts++; e.preventDefault();
+});
+document.addEventListener("paste", (e) => {
+  if (!started || finished) return;
+  pasteAttempts++; bumpPerQ("pasteAttempts"); e.preventDefault();
+});
+document.addEventListener("drop", (e) => {
+  if (!started || finished) return;
+  pasteAttempts++; bumpPerQ("pasteAttempts"); e.preventDefault();
+});
+document.addEventListener("contextmenu", (e) => {
+  if (!started || finished) return;
+  contextMenuAttempts++; e.preventDefault();
 });
 
 let lastShotAt = 0;
@@ -1548,8 +1580,7 @@ function render() {
     input.className = "free-input";
     input.placeholder = "Ваш ответ...";
     input.value = s.text || "";
-    input.onpaste = e => { s.pasteAttempts++; e.preventDefault(); };
-    input.ondrop = e => { s.pasteAttempts++; e.preventDefault(); };
+    // вставка/перетаскивание блокируются и считаются глобально (см. document-обработчики выше)
     if (s.submitted) {
       input.disabled = true;
       input.readOnly = true;
@@ -1677,32 +1708,14 @@ function pick(i) {
   render();
 }
 
-function isCorrect(qi) {
-  const q = QUIZ[qi];
-  const s = state[qi];
-  if (q.free) return false;
-  if (!s.finalized || !s.picked) return false;
-  if (q.multi) {
-    const correctIdx = q.answers.map((a, i) => a.correct ? i : -1).filter(i => i >= 0);
-    return s.picked.length === correctIdx.length && s.picked.every(i => correctIdx.includes(i));
-  }
-  return q.answers[s.picked[0]].correct === true;
-}
+// Грейдинг перенесён на сервер (Apps Script). Клиентского ключа/проверки правильности больше нет.
 
 function showResults() {
   flushActiveTimer();
   finished = true;
   testEndAt = Date.now();
-  const gradedIdx = QUIZ.map((q, i) => q.free ? -1 : i).filter(i => i >= 0);
-  const total = gradedIdx.length;
-  const correct = gradedIdx.reduce((sum, i) => sum + (isCorrect(i) ? 1 : 0), 0);
-
-  const sections = {};
-  QUIZ.forEach((q, i) => {
-    if (!sections[q.section]) sections[q.section] = { total: 0, correct: 0, free: !!q.free };
-    sections[q.section].total++;
-    if (!q.free && isCorrect(i)) sections[q.section].correct++;
-  });
+  // Балл считает СЕРВЕР (ключ ответов не на странице). Здесь — заглушки,
+  // которые заполнит deliverResults из ответа сервера.
 
   quizArea.classList.add("hidden");
   resultArea.classList.remove("hidden");
@@ -1719,30 +1732,16 @@ function showResults() {
 
   const score = document.createElement("div");
   score.className = "result-score";
-  score.textContent = correct + " / " + total;
+  score.textContent = "…";
   card.appendChild(score);
 
-  const pct = Math.round(correct / total * 100);
   const sub = document.createElement("div");
   sub.className = "result-label";
-  sub.textContent = pct + "% правильных ответов";
+  sub.textContent = "считаем результат…";
   card.appendChild(sub);
 
   const breakdown = document.createElement("div");
   breakdown.className = "result-breakdown";
-  Object.entries(sections).forEach(([name, data]) => {
-    const sec = document.createElement("div");
-    sec.className = "result-section";
-    const nm = document.createElement("div");
-    nm.className = "result-section-name";
-    nm.textContent = name.replace(/^Раздел [\d.]+\. /, "");
-    const sc = document.createElement("div");
-    sc.className = "result-section-score";
-    sc.textContent = data.free ? "—" : (data.correct + " / " + data.total);
-    sec.appendChild(nm);
-    sec.appendChild(sc);
-    breakdown.appendChild(sec);
-  });
   card.appendChild(breakdown);
 
   const freeQs = QUIZ.map((q, i) => ({ q, i })).filter(x => x.q.free);
@@ -1798,6 +1797,7 @@ function showResults() {
     testStartAt = null;
     testEndAt = null;
     screenshotAttempts = 0;
+    tabSwitches = 0; awayMsTotal = 0; copyAttempts = 0; pasteAttempts = 0; cutAttempts = 0; contextMenuAttempts = 0;
     lastRenderedIdx = -1;
     activeQuestionIdx = null;
     questionEnterAt = null;
@@ -1816,8 +1816,8 @@ function showResults() {
   sendStatus.textContent = "Отправка результатов на e-mail…";
   card.appendChild(sendStatus);
 
-  lastPayload = buildPayload(correct, total, pct, sections);
-  deliverResults(sendStatus);
+  lastPayload = buildPayload();
+  deliverResults(sendStatus, { score, sub, breakdown });
 
   card.appendChild(controls);
   resultArea.appendChild(card);
@@ -1828,34 +1828,22 @@ function answerText(q, idx) {
   return q.answers && q.answers[idx] ? q.answers[idx].t : "";
 }
 
-function correctAnswersText(q) {
-  if (!q.answers) return "";
-  const ci = q.answers.map((a, i) => a.correct ? i : -1).filter(i => i >= 0);
-  return ci.map(i => LETTERS[i] + ". " + q.answers[i].t).join(" | ");
-}
-
-function pickedAnswersText(q, s) {
-  if (!s.picked || !s.picked.length) return "";
-  return s.picked.map(i => LETTERS[i] + ". " + answerText(q, i)).join(" | ");
-}
-
-function buildPayload(correct, total, pct, sections) {
+function buildPayload() {
+  // Шлём «сырые» данные: какие варианты отметил кандидат (индексы) + тексты вариантов.
+  // Балл/правильность считает сервер по своему ключу — на странице ключа нет.
   const durationSec = testStartAt && testEndAt ? Math.round((testEndAt - testStartAt) / 1000) : 0;
   return {
     name: candidateName,
     date: new Date().toISOString(),
-    score: correct + "/" + total,
-    correct: correct,
-    total: total,
-    percent: pct,
     duration_sec: durationSec,
     screenshot_attempts: screenshotAttempts,
-    sections: Object.entries(sections).map(([name, d]) => ({
-      name,
-      correct: d.correct,
-      total: d.total,
-      free: !!d.free
-    })),
+    tab_switches: tabSwitches,
+    away_sec: Math.round(awayMsTotal / 1000),
+    copy_attempts: copyAttempts,
+    paste_attempts: pasteAttempts,
+    cut_attempts: cutAttempts,
+    context_menu_attempts: contextMenuAttempts,
+    token: REQUEST_TOKEN || undefined,
     answers: QUIZ.map((q, i) => {
       const s = state[i];
       const base = {
@@ -1875,16 +1863,14 @@ function buildPayload(correct, total, pct, sections) {
       }
       return Object.assign(base, {
         type: q.multi ? "multi" : "single",
-        picked_text: pickedAnswersText(q, s),
-        correct_text: correctAnswersText(q),
-        is_correct: isCorrect(i),
-        answered: !!s.finalized
+        options: q.answers.map(a => a.t),
+        picked: Array.isArray(s.picked) ? s.picked.slice() : []
       });
     })
   };
 }
 
-async function deliverResults(statusEl) {
+async function deliverResults(statusEl, els) {
   if (!EMAIL_WEBHOOK_URL) {
     statusEl.className = "send-status skipped";
     statusEl.textContent = "⚙ Отправка на e-mail ещё не настроена";
@@ -1906,7 +1892,7 @@ async function deliverResults(statusEl) {
     retry.className = "send-retry";
     retry.type = "button";
     retry.textContent = "Повторить";
-    retry.onclick = () => deliverResults(statusEl);
+    retry.onclick = () => deliverResults(statusEl, els);
     statusEl.appendChild(retry);
   };
 
@@ -1939,9 +1925,24 @@ async function deliverResults(statusEl) {
       if (ok && parsed && parsed.ok) {
         try { localStorage.removeItem(PENDING_KEY); } catch (e) {}
         statusEl.className = "send-status success";
-        statusEl.textContent = parsed.dedup
+        statusEl.textContent = parsed.deduped
           ? "✓ Результаты уже были отправлены"
           : "✓ Результаты отправлены работодателю";
+        if (els && parsed.total != null) {
+          els.score.textContent = parsed.correct + " / " + parsed.total;
+          els.sub.textContent = parsed.percent + "% правильных ответов";
+          if (els.breakdown && Array.isArray(parsed.sections)) {
+            els.breakdown.innerHTML = "";
+            parsed.sections.forEach((s) => {
+              const sec = document.createElement("div"); sec.className = "result-section";
+              const nm = document.createElement("div"); nm.className = "result-section-name";
+              nm.textContent = String(s.name || "").replace(/^Раздел [\d.]+\. /, "");
+              const sc = document.createElement("div"); sc.className = "result-section-score";
+              sc.textContent = s.free ? "—" : (s.correct + " / " + s.total);
+              sec.appendChild(nm); sec.appendChild(sc); els.breakdown.appendChild(sec);
+            });
+          }
+        }
       } else {
         showError("Сервер вернул ошибку (" + status + ")", { status, text: (text || "").slice(0, 200) });
       }
