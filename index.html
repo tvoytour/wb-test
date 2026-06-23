@@ -182,6 +182,14 @@
     overflow: visible;
     position: relative;
   }
+  .progress-counter {
+    margin-top: 10px;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: var(--ink-soft, #8a6b76);
+    text-align: center;
+    min-height: 16px;
+  }
   .progress-bar {
     height: 3px;
     background: linear-gradient(90deg, var(--burgundy), var(--rose));
@@ -1048,8 +1056,9 @@
   <header>
     <img src="logo.png?v=2" alt="CuteSkin" class="logo">
     <h1>Тест на Project Manager</h1>
-    <div class="subtitle">5 разделов · 18 вопросов. После ответа выбор нельзя изменить.</div>
+    <div class="subtitle">5 разделов · 18 вопросов. Ответ можно менять, пока вы на вопросе; после перехода «Дальше» вернуться нельзя.</div>
     <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-counter" id="progressCounter"></div>
     <div class="nav-grid" id="navGrid"></div>
   </header>
 
@@ -1244,6 +1253,7 @@ const QUIZ = [
 const LETTERS = ["А", "Б", "В", "Г", "Д"];
 let currentIdx = 0;
 let candidateName = "";
+let candidateContact = "";
 let started = false;
 let acknowledged = false;
 let finished = false;
@@ -1315,6 +1325,17 @@ document.addEventListener("visibilitychange", () => {
 window.addEventListener("blur", registerAway);
 window.addEventListener("focus", registerBack);
 
+// Предупреждение при попытке закрыть/перезагрузить во время теста: ответы не
+// восстанавливаются (тест «только вперёд» + антифрод), поэтому честнее предупредить,
+// чтобы кандидат не потерял прогресс случайным обновлением страницы.
+window.addEventListener("beforeunload", (e) => {
+  if (started && !finished) {
+    e.preventDefault();
+    e.returnValue = "";   // браузер покажет стандартный диалог подтверждения
+    return "";
+  }
+});
+
 // Антифрод: копирование/вырезание/вставка/перетаскивание/правый клик —
 // считаем и БЛОКИРУЕМ во время теста (чтобы нельзя было утащить вопрос или вставить ответ).
 function bumpPerQ(field) {
@@ -1374,11 +1395,12 @@ const quizArea = document.getElementById("quizArea");
 const resultArea = document.getElementById("resultArea");
 const navGrid = document.getElementById("navGrid");
 const progressBar = document.getElementById("progressBar");
+const progressCounter = document.getElementById("progressCounter");
 
 function isAnswered(i) {
   const q = QUIZ[i];
   const s = state[i];
-  return q.free ? s.submitted : s.finalized;
+  return q.free ? s.submitted : (Array.isArray(s.picked) && s.picked.length > 0);
 }
 
 function scrollToTop() {
@@ -1400,6 +1422,7 @@ function buildNav() {
   navGrid.innerHTML = "";
   if (!started) {
     progressBar.style.width = "0%";
+    if (progressCounter) progressCounter.textContent = "";
     return;
   }
   QUIZ.forEach((_, i) => {
@@ -1408,11 +1431,17 @@ function buildNav() {
     btn.textContent = i + 1;
     if (i === currentIdx) btn.classList.add("active");
     if (isAnswered(i)) btn.classList.add("answered");
-    btn.onclick = () => { currentIdx = i; render(); };
+    // forward-only: точки навигации — только индикатор прогресса, переход по ним запрещён
+    btn.style.pointerEvents = "none";
+    btn.tabIndex = -1;
     navGrid.appendChild(btn);
   });
   const answered = QUIZ.filter((_, i) => isAnswered(i)).length;
   progressBar.style.width = (answered / QUIZ.length * 100) + "%";
+  if (progressCounter) {
+    const pos = finished ? QUIZ.length : Math.min(currentIdx + 1, QUIZ.length);
+    progressCounter.textContent = "Вопрос " + pos + " из " + QUIZ.length + " · отвечено " + answered;
+  }
 }
 
 function renderWelcome() {
@@ -1457,19 +1486,47 @@ function renderWelcome() {
   field.appendChild(input);
   card.appendChild(field);
 
+  // Поле контакта (Telegram / телефон)
+  const cField = document.createElement("div");
+  cField.className = "welcome-field";
+  const cLabel = document.createElement("label");
+  cLabel.className = "welcome-label";
+  cLabel.textContent = "Telegram или телефон";
+  cField.appendChild(cLabel);
+
+  const cInput = document.createElement("input");
+  cInput.className = "welcome-input";
+  cInput.type = "text";
+  cInput.placeholder = "Например, @anna или +7 999 123-45-67";
+  cInput.value = candidateContact;
+  cInput.autocomplete = "off";
+  cInput.oninput = () => {
+    candidateContact = cInput.value;
+    cInput.classList.remove("error");
+  };
+  cField.appendChild(cInput);
+  card.appendChild(cField);
+
   const btn = document.createElement("button");
   btn.className = "btn btn-primary welcome-btn";
   btn.textContent = "Продолжить →";
   btn.onclick = () => {
     candidateName = input.value.trim();
+    candidateContact = cInput.value.trim();
     if (!candidateName) {
       input.classList.add("error");
       input.focus();
       return;
     }
+    if (!candidateContact) {
+      cInput.classList.add("error");
+      cInput.focus();
+      return;
+    }
     renderWarning();
   };
-  input.onkeydown = (e) => { if (e.key === "Enter") btn.click(); };
+  input.onkeydown = (e) => { if (e.key === "Enter") cInput.focus(); };
+  cInput.onkeydown = (e) => { if (e.key === "Enter") btn.click(); };
   card.appendChild(btn);
 
   quizArea.appendChild(card);
@@ -1568,7 +1625,7 @@ function render() {
   if (q.multi) {
     const hint = document.createElement("div");
     hint.className = "multi-hint";
-    hint.textContent = "Можно выбрать несколько вариантов ответа";
+    hint.textContent = "Можно выбрать несколько вариантов (повторный клик снимает выбор)";
     card.appendChild(hint);
   }
 
@@ -1641,22 +1698,10 @@ function render() {
 
       const pickedThis = s.picked && s.picked.includes(i);
 
-      if (q.multi) {
-        if (pickedThis) {
-          btn.classList.add("revealed", "picked");
-          btn.disabled = true;
-        } else {
-          btn.onclick = () => pick(i);
-        }
-      } else {
-        if (s.finalized) {
-          btn.classList.add("revealed");
-          btn.disabled = true;
-          if (pickedThis) btn.classList.add("picked");
-        } else {
-          btn.onclick = () => pick(i);
-        }
-      }
+      // На текущем вопросе выбор можно свободно менять: варианты всегда кликабельны,
+      // выбранные подсвечиваются. Фиксация наступает при переходе «Дальше» (вернуться нельзя).
+      if (pickedThis) btn.classList.add("picked");
+      btn.onclick = () => pick(i);
 
       answersEl.appendChild(btn);
     });
@@ -1666,13 +1711,8 @@ function render() {
   const controls = document.createElement("div");
   controls.className = "controls";
 
-  const prevBtn = document.createElement("button");
-  prevBtn.className = "btn btn-secondary";
-  prevBtn.textContent = "← Назад";
-  prevBtn.disabled = currentIdx === 0;
-  prevBtn.onclick = () => { if (currentIdx > 0) { currentIdx--; render(); } };
-  controls.appendChild(prevBtn);
-
+  // forward-only: кнопки «Назад» нет — ответ меняется только на текущем вопросе,
+  // после перехода «Дальше» вернуться нельзя.
   if (currentIdx === QUIZ.length - 1) {
     const finishBtn = document.createElement("button");
     finishBtn.className = "btn btn-finish";
@@ -1697,13 +1737,11 @@ function pick(i) {
 
   if (q.multi) {
     if (!s.picked) s.picked = [];
-    if (s.picked.includes(i)) return;
-    s.picked.push(i);
-    s.finalized = true;
+    const pos = s.picked.indexOf(i);
+    if (pos >= 0) s.picked.splice(pos, 1);   // повторный клик — снять выбор
+    else s.picked.push(i);                    // добавить вариант
   } else {
-    if (s.finalized) return;
-    s.picked = [i];
-    s.finalized = true;
+    s.picked = [i];                           // одиночный — сменить выбор
   }
   render();
 }
@@ -1711,6 +1749,7 @@ function pick(i) {
 // Грейдинг перенесён на сервер (Apps Script). Клиентского ключа/проверки правильности больше нет.
 
 function showResults() {
+  if (finished) return;   // защита от двойного «Завершить тест» (повторная отправка)
   flushActiveTimer();
   finished = true;
   testEndAt = Date.now();
@@ -1744,72 +1783,44 @@ function showResults() {
   breakdown.className = "result-breakdown";
   card.appendChild(breakdown);
 
-  const freeQs = QUIZ.map((q, i) => ({ q, i })).filter(x => x.q.free);
-  if (freeQs.length) {
-    const list = document.createElement("div");
-    list.className = "result-free-list";
-    freeQs.forEach(({ q, i }) => {
-      const item = document.createElement("div");
-      item.className = "result-free-item";
-      const qLine = document.createElement("div");
-      qLine.className = "result-free-q";
-      qLine.textContent = q.q;
-      const aLine = document.createElement("div");
-      aLine.className = "result-free-a";
-      const text = (state[i].text || "").trim();
-      if (text) aLine.textContent = text;
-      else { aLine.classList.add("empty"); aLine.textContent = "Ответ не был отправлен"; }
-      item.appendChild(qLine);
-      item.appendChild(aLine);
-      list.appendChild(item);
-    });
-    card.appendChild(list);
-  }
+  // Показываем кандидату ЕГО ответы по ВСЕМ вопросам — без отметок «верно/неверно»
+  // и без правильных ответов (ключ не раскрываем, чтобы нельзя было списать).
+  const ansLabel = document.createElement("div");
+  ansLabel.className = "result-label";
+  ansLabel.textContent = "Ваши ответы";
+  card.appendChild(ansLabel);
+
+  const list = document.createElement("div");
+  list.className = "result-free-list";
+  QUIZ.forEach((q, i) => {
+    const item = document.createElement("div");
+    item.className = "result-free-item";
+    const qLine = document.createElement("div");
+    qLine.className = "result-free-q";
+    qLine.textContent = (i + 1) + ". " + q.q;
+    const aLine = document.createElement("div");
+    aLine.className = "result-free-a";
+    let ans = "";
+    if (q.free) {
+      ans = (state[i].text || "").trim();
+    } else {
+      const picked = Array.isArray(state[i].picked) ? state[i].picked : [];
+      ans = picked.map((idx) => LETTERS[idx] + ". " + (q.answers[idx] ? q.answers[idx].t : "")).join("; ");
+    }
+    if (ans) aLine.textContent = ans;
+    else { aLine.classList.add("empty"); aLine.textContent = "Ответ не был отправлен"; }
+    item.appendChild(qLine);
+    item.appendChild(aLine);
+    list.appendChild(item);
+  });
+  card.appendChild(list);
 
   const controls = document.createElement("div");
   controls.className = "controls";
   controls.style.justifyContent = "center";
 
-  const reviewBtn = document.createElement("button");
-  reviewBtn.className = "btn btn-secondary";
-  reviewBtn.textContent = "Пересмотреть ответы";
-  reviewBtn.onclick = () => {
-    resultArea.classList.add("hidden");
-    quizArea.classList.remove("hidden");
-    currentIdx = 0;
-    render();
-  };
-  controls.appendChild(reviewBtn);
-
-  const restartBtn = document.createElement("button");
-  restartBtn.className = "btn btn-primary";
-  restartBtn.textContent = "Пройти заново";
-  restartBtn.onclick = () => {
-    state.forEach(s => {
-      s.picked = null; s.finalized = false; s.text = ""; s.submitted = false;
-      s.timeSpent = 0; s.pasteAttempts = 0; s.copyAttempts = 0;
-    });
-    candidateName = "";
-    started = false;
-    acknowledged = false;
-    finished = false;
-    lastPayload = null;
-    testStartAt = null;
-    testEndAt = null;
-    screenshotAttempts = 0;
-    tabSwitches = 0; awayMsTotal = 0; copyAttempts = 0; pasteAttempts = 0; cutAttempts = 0; contextMenuAttempts = 0;
-    lastRenderedIdx = -1;
-    activeQuestionIdx = null;
-    questionEnterAt = null;
-    lastAwayAt = 0;
-    awayStartAt = 0;
-    lastShotAt = 0;
-    resultArea.classList.add("hidden");
-    quizArea.classList.remove("hidden");
-    currentIdx = 0;
-    render();
-  };
-  controls.appendChild(restartBtn);
+  // Кнопки «Пройти заново» и «Пересмотреть ответы» убраны: повторное прохождение
+  // не рассматривается, а все ответы кандидата уже показаны выше на этой странице.
 
   const sendStatus = document.createElement("div");
   sendStatus.className = "send-status sending";
@@ -1834,6 +1845,7 @@ function buildPayload() {
   const durationSec = testStartAt && testEndAt ? Math.round((testEndAt - testStartAt) / 1000) : 0;
   return {
     name: candidateName,
+    contact: candidateContact,
     date: new Date().toISOString(),
     duration_sec: durationSec,
     screenshot_attempts: screenshotAttempts,
@@ -1943,6 +1955,9 @@ async function deliverResults(statusEl, els) {
             });
           }
         }
+      } else if (parsed && parsed.error === "rate_limited") {
+        showError("Слишком много отправок подряд. Подождите минуту и нажмите «Повторить».",
+          { status, error: parsed.error });
       } else {
         showError("Сервер вернул ошибку (" + status + ")", { status, text: (text || "").slice(0, 200) });
       }
