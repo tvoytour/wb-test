@@ -92,7 +92,7 @@ const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxL0N5lOGZtgGPq_BWh
       if (Number(a.copy)) afBits.push("коп " + a.copy);
       if (Number(a.screenshot)) afBits.push("скр " + a.screenshot);
       if (Number(a.tab_switches)) afBits.push("вкл " + a.tab_switches);
-      html += '<tr data-fp="' + esc(it.fingerprint) + '"' + (it.reject ? ' class="reject"' : "") + ">" +
+      html += '<tr data-id="' + esc(it.id) + '" data-fp="' + esc(it.fingerprint) + '"' + (it.reject ? ' class="reject"' : "") + ">" +
         "<td>" + (i + 1) + "</td>" +
         "<td>" + esc(it.name || "—") + (it.contact ? '<br><small class="muted">' + esc(it.contact) + "</small>" : "") + "</td>" +
         '<td><span class="pct ' + pctClass(p) + '">' + (p < 0 ? "—" : p + "%") + "</span></td>" +
@@ -112,7 +112,7 @@ const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxL0N5lOGZtgGPq_BWh
       if (sort.key === k) sort.dir *= -1; else sort = { key: k, dir: (k === "name" ? 1 : -1) };
       render();
     }));
-    tableWrap.querySelectorAll("tr[data-fp]").forEach((tr) => tr.addEventListener("click", () => openDetail(tr.dataset.fp)));
+    tableWrap.querySelectorAll("tr[data-id]").forEach((tr) => tr.addEventListener("click", () => openDetail(tr.dataset.id)));
   }
 
   function verdictPill(v) {
@@ -129,8 +129,8 @@ const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxL0N5lOGZtgGPq_BWh
     return '<span class="muted">—</span>';
   }
 
-  function openDetail(fp) {
-    const it = items.find((x) => String(x.fingerprint) === String(fp));
+  function openDetail(id) {
+    const it = items.find((x) => String(x.id) === String(id));
     if (!it) return;
     const a = it.antifraud || {};
     const afRows = [["Скриншоты", a.screenshot], ["Уходы/вкладки", a.tab_switches], ["Вне теста, сек", a.away_sec],
@@ -138,7 +138,9 @@ const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxL0N5lOGZtgGPq_BWh
       .map((r) => '<tr><td>' + esc(r[0]) + '</td><td class="mono" style="text-align:right;color:' + (Number(r[1]) ? "var(--bad)" : "var(--ok)") + '">' + (Number(r[1]) || 0) + "</td></tr>").join("");
     const secRows = (it.sections || []).map((s) =>
       "<tr><td>" + esc(s.name) + '</td><td style="text-align:right">' + (s.free ? "свободные" : (s.correct + " / " + s.total)) + "</td></tr>").join("");
-    const ans = (it.answers || []).map(renderAns).join("");
+    const ans = (it.answers && it.answers.length)
+      ? it.answers.map(renderAns).join("")
+      : '<p class="muted">Детальные ответы по вопросам не сохранялись для ранних прохождений (доступны только для новых).</p>';
     panel.innerHTML =
       "<h2>" + esc(it.name || "—") + "</h2>" +
       (it.contact ? '<p class="mono" style="margin:.1rem 0">📇 ' + esc(it.contact) + "</p>" : "") +
@@ -172,7 +174,7 @@ const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxL0N5lOGZtgGPq_BWh
     fetch(WEBHOOK_URL, {
       method: "POST", mode: "cors", redirect: "follow",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "set_decision", token: tokenEl.value.trim(), fingerprint: it.fingerprint, decision: decision }),
+      body: JSON.stringify({ action: "set_decision", token: tokenEl.value.trim(), row: it.id, fingerprint: it.fingerprint, decision: decision }),
     }).then((r) => r.text()).then((t) => {
       let d = null; try { d = JSON.parse(t); } catch (e) {}
       if (d && d.ok) { it.decision = decision; const cur = $("#decCur"); if (cur) cur.innerHTML = decisionCell(it); render(); }
@@ -215,7 +217,9 @@ const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxL0N5lOGZtgGPq_BWh
       .map((r) => '<tr><td>' + esc(r[0]) + '</td><td class="mono" style="text-align:right;color:' + (Number(r[1]) ? "#c62828" : "#2e7d32") + '">' + (Number(r[1]) || 0) + "</td></tr>").join("");
     const secRows = (it.sections || []).map((s) =>
       "<tr><td>" + esc(s.name) + '</td><td style="text-align:right">' + (s.free ? "свободные" : (s.correct + " / " + s.total)) + "</td></tr>").join("");
-    const ans = (it.answers || []).map(renderAns).join("");
+    const ans = (it.answers && it.answers.length)
+      ? it.answers.map(renderAns).join("")
+      : '<p class="muted">Детальные ответы по вопросам не сохранялись для ранних прохождений (доступны только для новых).</p>';
     const decTxt = it.decision === "next" ? "На следующий этап" : it.decision === "reject" ? "На отсев"
       : (it.reject ? "На отсев (авто)" : "—");
     return "<h2 style='margin:.1rem 0'>" + esc(it.name || "—") + "</h2>" +
@@ -255,7 +259,7 @@ const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxL0N5lOGZtgGPq_BWh
     fetch(WEBHOOK_URL, {
       method: "POST", mode: "cors", redirect: "follow",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "set_comment", token: tokenEl.value.trim(), fingerprint: it.fingerprint, comment: ta.value }),
+      body: JSON.stringify({ action: "set_comment", token: tokenEl.value.trim(), row: it.id, fingerprint: it.fingerprint, comment: ta.value }),
     }).then((r) => r.text()).then((t) => {
       let d = null; try { d = JSON.parse(t); } catch (e) {}
       if (d && d.ok) { it.comment = ta.value; meta.textContent = "сохранено ✓"; render(); }
