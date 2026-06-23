@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WB-тест · Админка кандидатов</title>
+  <meta name="robots" content="noindex" />
+  <style>
+    :root{
+      --bg:#fff5f8; --surface:#fff; --ink:#1a1612; --soft:#6b5b61; --faint:#9a8a90;
+      --line:#f0dbe4; --line2:#e6c7d4; --accent:#d9466f; --accent2:#b02551;
+      --ok:#2e7d32; --mid:#ef6c00; --bad:#c62828;
+      --font:-apple-system,Segoe UI,Roboto,Arial,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:var(--font);color:var(--ink);background:var(--bg)}
+    .top{display:flex;align-items:center;gap:1rem;padding:.8rem 1.2rem;background:#fff;border-bottom:1px solid var(--line);flex-wrap:wrap}
+    .top h1{font-size:1.05rem;margin:0;color:var(--accent2)}
+    .top .grow{flex:1}
+    .mono{font-family:var(--mono)}
+    input,button{font-family:var(--font);font-size:.9rem}
+    .tok{display:flex;gap:.4rem;align-items:center}
+    .tok input{padding:.4rem .6rem;border:1px solid var(--line2);border-radius:6px;width:200px}
+    .btn{padding:.45rem .8rem;border:1px solid var(--accent2);background:var(--accent2);color:#fff;border-radius:6px;cursor:pointer}
+    .btn--ghost{background:none;color:var(--accent2)}
+    .btn:disabled{opacity:.5;cursor:default}
+    .wrap{padding:1rem 1.2rem;max-width:1200px;margin:0 auto}
+    .muted{color:var(--faint)}
+    table{width:100%;border-collapse:collapse;font-size:.88rem;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+    th,td{padding:.5rem .6rem;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+    th{background:#fcd4e0;color:var(--accent2);font-size:.74rem;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;user-select:none}
+    tbody tr{cursor:pointer}
+    tbody tr:hover{background:#fff5f8}
+    tr.reject{background:#fff0f0}
+    .pct{font-family:var(--mono);font-weight:700}
+    .pct.t{color:var(--ok)}.pct.m{color:var(--mid)}.pct.b{color:var(--bad)}
+    .pill{display:inline-block;font-size:.72rem;padding:.08rem .45rem;border-radius:999px;border:1px solid var(--line2)}
+    .pill.bad{color:var(--bad);border-color:var(--bad)}
+    .pill.ok{color:var(--ok);border-color:var(--ok)}
+    .pill.mid{color:var(--mid);border-color:var(--mid)}
+    a{color:var(--accent2)}
+    /* modal */
+    .modal[hidden]{display:none}
+    .modal{position:fixed;inset:0;display:flex;align-items:flex-start;justify-content:center;background:rgba(40,20,30,.45);padding:2rem 1rem;overflow:auto;z-index:10}
+    .panel{background:#fff;max-width:780px;width:100%;border-radius:14px;padding:1.4rem 1.6rem;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+    .panel h2{margin:.1rem 0;font-size:1.3rem}
+    .meta{display:grid;grid-template-columns:max-content 1fr;gap:.25rem 1rem;font-size:.9rem;margin:.6rem 0}
+    .meta dt{color:var(--faint)}.meta dd{margin:0}
+    .sec{margin:1rem 0 .3rem;color:var(--accent2);font-weight:700;font-size:.95rem;border-bottom:1px solid var(--line);padding-bottom:.2rem}
+    .qa{padding:.5rem 0;border-bottom:1px dotted var(--line)}
+    .qa b{font-size:.9rem}.qa .v{font-family:var(--mono);font-size:.8rem}
+    .qa .v.ok{color:var(--ok)}.qa .v.no{color:var(--bad)}.qa .v.man{color:var(--mid)}
+    .qa pre{white-space:pre-wrap;background:#fff5f8;padding:.4rem .6rem;border-radius:6px;font-family:var(--mono);font-size:.8rem;margin:.3rem 0}
+    .qmeta{color:var(--faint);font-size:.78rem}
+    .qmeta.flag{color:var(--bad)}
+    textarea{width:100%;min-height:90px;border:1px solid var(--line2);border-radius:8px;padding:.6rem;font-family:var(--font);font-size:.9rem;resize:vertical}
+    .row-actions{display:flex;align-items:center;gap:.6rem;justify-content:space-between;margin-top:.4rem}
+    .decision-bar{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin:.3rem 0 .2rem}
+    .decision-btns{display:flex;gap:.4rem;flex-wrap:wrap}
+    .err{color:var(--bad)}
+    /* Печать одного отчёта кандидата → «Сохранить в PDF» из браузера */
+    @media print{
+      body *{visibility:hidden}
+      #modal,#modal *{visibility:visible}
+      #modal{position:absolute;inset:0;background:#fff;padding:0;display:block;overflow:visible}
+      .panel{box-shadow:none;max-width:none;border-radius:0;padding:0 1rem}
+      .row-actions,#pdfBtn,#saveCmt,#close{display:none !important}
+      #cmt{border:1px solid #ccc;min-height:auto}
+      table{border:1px solid #ddd}
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <h1>WB-тест · кандидаты</h1>
+    <span id="count" class="muted mono"></span>
+    <span class="grow"></span>
+    <div class="tok">
+      <input id="token" type="password" placeholder="токен админки" autocomplete="off" />
+      <button class="btn" id="load">Загрузить</button>
+      <button class="btn btn--ghost" id="refresh" title="Обновить">↻</button>
+      <button class="btn btn--ghost" id="leaderboard" title="Пересобрать лист «Рейтинг» в таблице">Обновить рейтинг</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <p id="hint" class="muted">Введите токен админки и нажмите «Загрузить». Токен задаёт начальник в Apps Script (Script Property <span class="mono">ADMIN_TOKEN</span>).</p>
+    <div id="tableWrap"></div>
+  </div>
+
+  <div class="modal" id="modal" hidden>
+    <div class="panel" id="panel"></div>
+  </div>
+
+  <script src="vendor/html2pdf.bundle.min.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
